@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
 import { Container } from "@/components/ui/container";
+import { GlowCard } from "@/components/ui/glow-card";
 import { CURRENCIES, formatPrice } from "@/lib/currencies";
 
 const plans = [
@@ -69,7 +70,13 @@ export default function Pricing() {
   return (
     <section id="pricing" className="relative py-16 md:py-20">
       <Container>
-        <div className="mx-auto max-w-2xl text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+          className="mx-auto max-w-2xl text-center"
+        >
           <p className="text-sm font-medium text-cyan-400">Pricing</p>
           <h2 className="mt-3 text-4xl font-bold lg:text-5xl">
             Simple pricing,
@@ -89,28 +96,28 @@ export default function Pricing() {
               <ChevronDown size={14} />
             </button>
 
-                {dropdownOpen && (
-                <div className="custom-scrollbar absolute left-1/2 z-20 mt-2 max-h-64 w-56 -translate-x-1/2 overflow-y-auto rounded-xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl">
-                    {CURRENCIES.map((c) => (
-                    <button
-                        key={c.code}
-                        onClick={() => {
-                        setCurrencyCode(c.code);
-                        setDropdownOpen(false);
-                        }}
-                        className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-cyan-500/10 hover:text-cyan-300 ${
-                        c.code === currencyCode ? "text-cyan-300" : "text-slate-300"
-                        }`}
-                    >
-                        {c.code} — {c.label}
-                    </button>
-                    ))}
-                </div>
-                )}
+            {dropdownOpen && (
+              <div className="custom-scrollbar absolute left-1/2 z-20 mt-2 max-h-64 w-56 -translate-x-1/2 overflow-y-auto rounded-xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl">
+                {CURRENCIES.map((c) => (
+                  <button
+                    key={c.code}
+                    onClick={() => {
+                      setCurrencyCode(c.code);
+                      setDropdownOpen(false);
+                    }}
+                    className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-cyan-500/10 hover:text-cyan-300 ${
+                      c.code === currencyCode ? "text-cyan-300" : "text-slate-300"
+                    }`}
+                  >
+                    {c.code} — {c.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+        <div className="mt-12 grid items-stretch gap-6 lg:grid-cols-3">
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
@@ -118,52 +125,62 @@ export default function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: i * 0.12 }}
-              className={`relative rounded-3xl border p-8 ${
-                plan.highlighted
-                  ? "border-cyan-500/40 bg-cyan-500/5 shadow-[0_0_60px_rgba(0,200,255,0.1)]"
-                  : "border-white/10 bg-white/5"
-              }`}
+              className="relative h-full"
             >
               {plan.highlighted && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-cyan-500 px-3 py-1 text-xs font-medium text-black">
+                <div className="absolute -top-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-cyan-500 px-3 py-1 text-xs font-medium text-black">
                   Most Popular
                 </div>
               )}
 
-              <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
-              <p className="mt-1 text-sm text-slate-400">{plan.description}</p>
-
-              <div className="mt-6">
-                <span className="text-4xl font-bold text-white">
-                  {plan.priceMonthlyPHP === 0
-                    ? "Free"
-                    : loading
-                    ? "..."
-                    : formatPrice(plan.priceMonthlyPHP, currencyCode, rates)}
-                </span>
-                {plan.priceMonthlyPHP > 0 && (
-                  <span className="text-sm text-slate-400"> / month</span>
-                )}
-              </div>
-
-              <ul className="mt-8 space-y-3">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2 text-sm text-slate-300">
-                    <Check size={16} className="mt-0.5 shrink-0 text-cyan-400" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                className={`mt-8 w-full rounded-xl py-3 text-sm font-medium transition-colors ${
+              <GlowCard
+                className={`relative flex h-full flex-col rounded-3xl border p-8 ${
                   plan.highlighted
-                    ? "bg-cyan-500 text-black hover:bg-cyan-400"
-                    : "border border-white/10 text-white hover:bg-white/10"
+                    ? "border-cyan-500/40 bg-cyan-500/5 shadow-[0_0_60px_rgba(0,200,255,0.1)]"
+                    : "border-white/10 bg-white/5"
                 }`}
               >
-                {plan.priceMonthlyPHP === 0 ? "Get Started" : "Choose Plan"}
-              </button>
+                {plan.highlighted && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-cyan-500 px-3 py-1 text-xs font-medium text-black">
+                    Most Popular
+                  </div>
+                )}
+
+                <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
+                <p className="mt-1 text-sm text-slate-400">{plan.description}</p>
+
+                <div className="mt-6">
+                  <span className="text-4xl font-bold text-white">
+                    {plan.priceMonthlyPHP === 0
+                      ? "Free"
+                      : loading
+                      ? "..."
+                      : formatPrice(plan.priceMonthlyPHP, currencyCode, rates)}
+                  </span>
+                  {plan.priceMonthlyPHP > 0 && (
+                    <span className="text-sm text-slate-400"> / month</span>
+                  )}
+                </div>
+
+                <ul className="mt-8 flex-1 space-y-3">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2 text-sm text-slate-300">
+                      <Check size={16} className="mt-0.5 shrink-0 text-cyan-400" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  className={`mt-8 w-full rounded-xl py-3 text-sm font-medium transition-colors ${
+                    plan.highlighted
+                      ? "bg-cyan-500 text-black hover:bg-cyan-400"
+                      : "border border-white/10 text-white hover:bg-white/10"
+                  }`}
+                >
+                  {plan.priceMonthlyPHP === 0 ? "Get Started" : "Choose Plan"}
+                </button>
+              </GlowCard>
             </motion.div>
           ))}
         </div>

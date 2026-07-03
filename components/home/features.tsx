@@ -10,13 +10,14 @@ import {
   Route,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
+import { GlowCard } from "@/components/ui/glow-card";
 
 const features = [
   {
     icon: Sparkles,
     title: "AI Itinerary Generation",
     description:
-      "Just tell us where, when, and your budget — Atlas builds a complete day-by-day travel plan in seconds.",
+      "Just tell us where, when, and your budget — Wayfarer builds a complete day-by-day travel plan in seconds.",
     color: "text-cyan-400",
     bg: "bg-cyan-500/10",
   },
@@ -32,7 +33,7 @@ const features = [
     icon: Hotel,
     title: "Hotel Recommendations",
     description:
-      "Atlas surfaces the best-rated stays that match your budget and preferred location.",
+      "Wayfarer surfaces the best-rated stays that match your budget and preferred location.",
     color: "text-purple-400",
     bg: "bg-purple-500/10",
   },
@@ -56,7 +57,7 @@ const features = [
     icon: Route,
     title: "Optimized Routes",
     description:
-      "Atlas arranges your daily activities in the most efficient order, saving time and travel hassle.",
+      "Wayfarer arranges your daily activities in the most efficient order, saving time and travel hassle.",
     color: "text-blue-400",
     bg: "bg-blue-500/10",
   },
@@ -74,7 +75,7 @@ export default function Features() {
             planned by AI
           </h2>
           <p className="mt-4 text-slate-400">
-            Atlas handles the research so you can focus on the adventure.
+            Wayfarer handles the research so you can focus on the adventure.
           </p>
         </div>
 
@@ -89,19 +90,20 @@ export default function Features() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-colors hover:border-cyan-500/30 hover:bg-white/[0.07]"
               >
-                <div className={`inline-flex rounded-xl ${feature.bg} p-3`}>
-                  <Icon className={feature.color} size={22} />
-                </div>
+                <GlowCard className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-colors hover:border-cyan-500/30 hover:bg-white/[0.07]">
+                  <div className={`inline-flex rounded-xl ${feature.bg} p-3`}>
+                    <Icon className={feature.color} size={22} />
+                  </div>
 
-                <h3 className="mt-5 text-lg font-semibold text-white">
-                  {feature.title}
-                </h3>
+                  <h3 className="mt-5 text-lg font-semibold text-white">
+                    {feature.title}
+                  </h3>
 
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                  {feature.description}
-                </p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    {feature.description}
+                  </p>
+                </GlowCard>
               </motion.div>
             );
           })}

@@ -1,3 +1,6 @@
+"use client";
+
+import { motion } from "framer-motion";
 import PlannerFlow from "@/components/planner/planner-flow";
 import FloatingWidgets from "./floating-widgets";
 
@@ -12,7 +15,11 @@ export default function Hero() {
       <Container>
         <div className="grid items-center gap-20 lg:grid-cols-2">
           {/* LEFT */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
             <HeroBadge />
 
             <h1 className="mt-8 text-6xl font-black leading-tight lg:text-7xl">
@@ -22,7 +29,7 @@ export default function Hero() {
             </h1>
 
             <p className="mt-8 max-w-xl text-lg leading-8 text-slate-400">
-              Atlas builds personalized travel plans, predicts your expenses,
+              Wayfarer builds personalized travel plans, predicts your expenses,
               recommends flights, hotels, restaurants, and creates the perfect
               itinerary in seconds.
             </p>
@@ -33,15 +40,20 @@ export default function Hero() {
                 Watch Demo
               </AnimatedButton>
             </div>
-          </div>
+          </motion.div>
 
           {/* RIGHT */}
-          <div className="flex justify-center">
+          <motion.div
+            className="flex justify-center"
+            initial={{ opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
+          >
             <div className="relative px-16 py-12">
               <FloatingWidgets />
               <PlannerFlow />
             </div>
-          </div>
+          </motion.div>
         </div>
       </Container>
     </section>

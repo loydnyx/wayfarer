@@ -3,7 +3,7 @@ import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import Hero from "@/components/hero/hero";
 import Features from "@/components/home/features";
-import WhyAtlas from "@/components/home/why-atlas";
+import WhyWayfarer from "@/components/home/why-wayfarer";
 import HowItWorks from "@/components/home/how-it-works";
 import Pricing from "@/components/home/pricing";
 
@@ -16,7 +16,7 @@ export default function Home() {
 
       <Hero />
       <Features />
-      <WhyAtlas />
+      <WhyWayfarer />
       <HowItWorks />
       <Pricing />
       <Footer />

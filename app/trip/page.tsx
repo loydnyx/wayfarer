@@ -6,6 +6,7 @@ import ResultCard from "@/components/planner/result-card";
 import { Button } from "@/components/ui/button";
 import type { TripInput, TripResult } from "@/types/trip";
 
+
 import { ArrowLeft } from "lucide-react";
 
 export default function TripPage() {
