@@ -1,21 +1,71 @@
 "use client";
 
-import { Download, Share2 } from "lucide-react";
+import { useState } from "react";
+import { Download, Share2, Check } from "lucide-react";
+import type { TripResult, TripInput } from "@/types/trip";
+import { exportTripToPDF } from "@/lib/export-pdf";
 
-export default function ActionButtons() {
+type Props = {
+  trip: TripResult;
+  input: TripInput;
+};
+
+export default function ActionButtons({ trip, input }: Props) {
+  const [copied, setCopied] = useState(false);
+
+  const handleExportPDF = () => {
+    exportTripToPDF(trip, input);
+  };
+
+  const handleShare = async () => {
+    const shareText = `Check out my ${input.days}-day trip to ${input.destination}, planned by Wayfarer AI!\n\n${trip.summary}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: trip.title,
+          text: shareText,
+        });
+      } catch (err) {
+        // User cancelled or share failed silently — no action needed
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
+    }
+  };
+
   return (
     <section className="flex gap-4">
-
-      <button className="flex-1 rounded-xl bg-cyan-500 py-3 font-semibold text-black transition hover:bg-cyan-400">
+      <button
+        onClick={handleExportPDF}
+        className="flex-1 rounded-xl bg-cyan-500 py-3 text-sm font-medium text-black transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-cyan-400 hover:shadow-lg hover:shadow-cyan-500/20 active:translate-y-0 active:scale-[0.98]"
+      >
         <Download className="mr-2 inline" size={18} />
         Export PDF
       </button>
 
-      <button className="flex-1 rounded-xl border border-white/10 bg-white/5 py-3 transition hover:bg-white/10">
-        <Share2 className="mr-2 inline" size={18} />
-        Share
+      <button
+        onClick={handleShare}
+        className="flex-1 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-medium text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-cyan-500/30 hover:bg-white/10 active:translate-y-0 active:scale-[0.98]"
+      >
+        {copied ? (
+          <>
+            <Check className="mr-2 inline text-green-400" size={18} />
+            Copied!
+          </>
+        ) : (
+          <>
+            <Share2 className="mr-2 inline" size={18} />
+            Share
+          </>
+        )}
       </button>
-
     </section>
   );
 }

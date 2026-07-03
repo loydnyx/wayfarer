@@ -30,3 +30,4 @@ export type TripResult = {
 
   tips: string[];
 };
+

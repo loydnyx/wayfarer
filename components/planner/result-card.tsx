@@ -66,7 +66,26 @@ export default function ResultCard(props: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <ActionButtons />
+          <ActionButtons
+            trip={{
+              title: props.title,
+              summary: props.summary,
+              country: props.country,
+              city: props.city,
+              coordinates: props.coordinates,
+              bestSeason: props.bestSeason,
+              estimatedDailyBudget: props.estimatedDailyBudget,
+              heroImageQuery: props.heroImageQuery,
+              galleryQueries: props.galleryQueries,
+              itinerary: props.itinerary,
+              tips: props.tips,
+            }}
+            input={{
+              destination: props.destination,
+              budget: props.budget,
+              days: props.days,
+            }}
+          />
         </motion.div>
       )}
     </div>
