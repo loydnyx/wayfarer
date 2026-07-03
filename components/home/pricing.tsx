@@ -97,7 +97,7 @@ export default function Pricing() {
             </button>
 
             {dropdownOpen && (
-              <div className="custom-scrollbar absolute left-1/2 z-20 mt-2 max-h-64 w-56 -translate-x-1/2 overflow-y-auto rounded-xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl">
+              <div className="custom-scrollbar absolute left-1/2 z-50 mt-2 max-h-64 w-56 -translate-x-1/2 overflow-y-auto rounded-xl border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl">
                 {CURRENCIES.map((c) => (
                   <button
                     key={c.code}
@@ -105,9 +105,8 @@ export default function Pricing() {
                       setCurrencyCode(c.code);
                       setDropdownOpen(false);
                     }}
-                    className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-cyan-500/10 hover:text-cyan-300 ${
-                      c.code === currencyCode ? "text-cyan-300" : "text-slate-300"
-                    }`}
+                    className={`block w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-cyan-500/10 hover:text-cyan-300 ${c.code === currencyCode ? "text-cyan-300" : "text-slate-300"
+                      }`}
                   >
                     {c.code} — {c.label}
                   </button>
@@ -134,11 +133,10 @@ export default function Pricing() {
               )}
 
               <GlowCard
-                className={`relative flex h-full flex-col rounded-3xl border p-8 ${
-                  plan.highlighted
-                    ? "border-cyan-500/40 bg-cyan-500/5 shadow-[0_0_60px_rgba(0,200,255,0.1)]"
-                    : "border-white/10 bg-white/5"
-                }`}
+                className={`relative flex h-full flex-col rounded-3xl border p-8 ${plan.highlighted
+                  ? "border-cyan-500/40 bg-cyan-500/5 shadow-[0_0_60px_rgba(0,200,255,0.1)]"
+                  : "border-white/10 bg-white/5"
+                  }`}
               >
                 {plan.highlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-cyan-500 px-3 py-1 text-xs font-medium text-black">
@@ -151,15 +149,19 @@ export default function Pricing() {
 
                 <div className="mt-6">
                   <span className="text-4xl font-bold text-white">
-                    {plan.priceMonthlyPHP === 0
-                      ? "Free"
-                      : loading
-                      ? "..."
-                      : formatPrice(plan.priceMonthlyPHP, currencyCode, rates)}
+                    {plan.priceMonthlyPHP === 0 ? (
+                      <span className="text-4xl font-bold text-white">Free</span>
+                    ) : loading ? (
+                      <span className="inline-block h-10 w-24 animate-pulse rounded-lg bg-white/10" />
+                    ) : (
+                      <span className="text-4xl font-bold text-white">
+                        {formatPrice(plan.priceMonthlyPHP, currencyCode, rates)}
+                      </span>
+                    )}
+                    {plan.priceMonthlyPHP > 0 && (
+                      <span className="text-sm text-slate-400"> / month</span>
+                    )}
                   </span>
-                  {plan.priceMonthlyPHP > 0 && (
-                    <span className="text-sm text-slate-400"> / month</span>
-                  )}
                 </div>
 
                 <ul className="mt-8 flex-1 space-y-3">
@@ -172,11 +174,10 @@ export default function Pricing() {
                 </ul>
 
                 <button
-                  className={`mt-8 w-full rounded-xl py-3 text-sm font-medium transition-colors ${
-                    plan.highlighted
-                      ? "bg-cyan-500 text-black hover:bg-cyan-400"
-                      : "border border-white/10 text-white hover:bg-white/10"
-                  }`}
+                  className={`mt-8 w-full rounded-xl py-3 text-sm font-medium transition-colors ${plan.highlighted
+                    ? "bg-cyan-500 text-black hover:bg-cyan-400"
+                    : "border border-white/10 text-white hover:bg-white/10"
+                    }`}
                 >
                   {plan.priceMonthlyPHP === 0 ? "Get Started" : "Choose Plan"}
                 </button>

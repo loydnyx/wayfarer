@@ -79,7 +79,7 @@ export default function Features() {
           </p>
         </div>
 
-        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-16 grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, i) => {
             const Icon = feature.icon;
 
@@ -90,9 +90,10 @@ export default function Features() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="h-full"
               >
-                <GlowCard className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-colors hover:border-cyan-500/30 hover:bg-white/[0.07]">
-                  <div className={`inline-flex rounded-xl ${feature.bg} p-3`}>
+                <GlowCard className="flex h-full flex-col items-start rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-colors hover:border-cyan-500/30 hover:bg-white/[0.07]">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${feature.bg}`}>
                     <Icon className={feature.color} size={22} />
                   </div>
 
@@ -100,7 +101,7 @@ export default function Features() {
                     {feature.title}
                   </h3>
 
-                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-400">
                     {feature.description}
                   </p>
                 </GlowCard>
