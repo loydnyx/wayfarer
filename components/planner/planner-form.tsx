@@ -82,10 +82,12 @@ export default function PlannerForm({ onGenerate }: Props) {
   return (
     <div className="space-y-4">
       <div className="relative" ref={wrapperRef}>
-        <label className="mb-2 block text-sm text-slate-400">
+        <label htmlFor="destination" className="mb-2 block text-sm text-slate-400">
           Destination
         </label>
         <input
+          id="destination"
+          name="destination"
           value={destination}
           onChange={(e) => {
             setDestination(e.target.value);
@@ -120,8 +122,12 @@ export default function PlannerForm({ onGenerate }: Props) {
       </div>
 
       <div>
-        <label className="mb-2 block text-sm text-slate-400">Budget</label>
+        <label htmlFor="budget" className="mb-2 block text-sm text-slate-400">
+          Budget
+        </label>
         <input
+          id="budget"
+          name="budget"
           value={budget}
           onChange={(e) => {
             setBudget(e.target.value);
@@ -138,8 +144,12 @@ export default function PlannerForm({ onGenerate }: Props) {
       </div>
 
       <div>
-        <label className="mb-2 block text-sm text-slate-400">Days</label>
+        <label htmlFor="days" className="mb-2 block text-sm text-slate-400">
+          Days
+        </label>
         <input
+          id="days"
+          name="days"
           value={days}
           onChange={(e) => {
             setDays(e.target.value);
