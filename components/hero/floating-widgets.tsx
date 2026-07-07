@@ -40,39 +40,39 @@ export default function FloatingWidgets() {
   }, []);
 
   const widgets = [
-  {
-    icon: CloudSun,
-    label: "Weather",
-    value: values.weather,
-    position: "top-[-1rem] left-[-9rem]",
-    floatDelay: 0,
-    color: "text-yellow-300",
-  },
-  {
-    icon: Plane,
-    label: "Flight",
-    value: values.flight,
-    position: "top-[8rem] right-[-9rem]",
-    floatDelay: 0.4,
-    color: "text-cyan-300",
-  },
-  {
-    icon: Wallet,
-    label: "Budget",
-    value: values.budget,
-    position: "bottom-[10rem] left-[-10rem]",
-    floatDelay: 0.8,
-    color: "text-green-300",
-  },
-  {
-    icon: Hotel,
-    label: "Hotels",
-    value: values.hotels,
-    position: "bottom-[-1rem] right-[-9rem]",
-    floatDelay: 1.2,
-    color: "text-purple-300",
-  },
-];
+    {
+      icon: CloudSun,
+      label: "Weather",
+      value: values.weather,
+      position: "top-[-1rem] left-[-5rem] xl:left-[-7rem] 2xl:left-[-10rem]",
+      floatDelay: 0,
+      color: "text-yellow-300",
+    },
+    {
+      icon: Plane,
+      label: "Flight",
+      value: values.flight,
+      position: "top-[8rem] right-[-6rem] xl:right-[-8rem] 2xl:right-[-11rem]",
+      floatDelay: 0.4,
+      color: "text-cyan-300",
+    },
+    {
+      icon: Wallet,
+      label: "Budget",
+      value: values.budget,
+      position: "bottom-[8rem] left-[-6rem] xl:left-[-8rem] 2xl:left-[-11rem]",
+      floatDelay: 0.8,
+      color: "text-green-300",
+    },
+    {
+      icon: Hotel,
+      label: "Hotels",
+      value: values.hotels,
+      position: "bottom-[-1rem] right-[-5rem] xl:right-[-7rem] 2xl:right-[-10rem]",
+      floatDelay: 1.2,
+      color: "text-purple-300",
+    },
+  ];
 
   return (
     <div className="pointer-events-none absolute inset-0 hidden lg:block">

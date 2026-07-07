@@ -16,7 +16,7 @@ export default function Hero() {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   return (
-    <section className="relative py-16 lg:py-20">
+    <section className="relative overflow-x-clip py-16 lg:py-20">
       <Container>
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
           {/* LEFT */}
@@ -60,7 +60,7 @@ export default function Hero() {
             transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
           >
             {/* Desktop planner */}
-            <div className="relative hidden px-16 py-12 lg:block">
+            <div className="relative hidden px-20 py-15 lg:-translate-x-8 lg:block">
               <FloatingWidgets />
               <PlannerFlow />
             </div>
