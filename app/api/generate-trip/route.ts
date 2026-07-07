@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
       "https://generativelanguage.googleapis.com/v1beta/openai/",
   });
 
-  const prompt = `
+const prompt = `
 Return ONLY valid JSON.
 
 No markdown.
@@ -137,6 +137,9 @@ No markdown.
 No explanation.
 
 No code block.
+
+CURRENCY RULE:
+The budget below is given in a specific currency (e.g. "PHP", "USD"). When assessing whether the budget is realistic, mentally account for real-world prices at the destination (which may use a different local currency) and its cost of living relative to the traveler's budget currency — this affects how tight or generous the budget actually is. However, in your written output (summary, itinerary, tips, estimatedDailyBudget), express ALL monetary values using ONLY the traveler's given currency and its symbol. Never write, mention, or reference any other currency code or symbol (e.g. do not write "EUR", "€", "USD", "$") anywhere in your response, even as a comparison or approximation.
 
 {
 "title":"",

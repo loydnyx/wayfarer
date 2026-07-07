@@ -15,6 +15,11 @@ export type SavedTrip = {
   tips: string[];
   status: string;
   created_at: string;
+  coordinates?: { lat: number; lng: number } | null; 
+  best_season?: string;                               
+  estimated_daily_budget?: string;                    
+  hero_image_query?: string;                           
+  gallery_queries?: string[]; 
 };
 
 export async function getSavedTrips(): Promise<SavedTrip[]> {

@@ -15,11 +15,14 @@ type Props = TripResult & {
   destination: string;
   budget: string;
   days: string;
+  isSavedTrip?: boolean; // BAGO
 };
 
 export default function ResultCard(props: Props) {
-  // 0 = summary typing, 1 = itinerary typing, 2 = insights typing, 3 = all done
-  const [step, setStep] = useState(0);
+  const { isSavedTrip = false } = props;
+
+  // Kung saved trip na, simulan agad sa step 3 (lahat done na, walang typing)
+  const [step, setStep] = useState(isSavedTrip ? 3 : 0);
 
   return (
     <div className="space-y-10">
@@ -27,8 +30,8 @@ export default function ResultCard(props: Props) {
 
       <AIIntro
         summary={props.summary}
-        isActive={step === 0}
-        isDone={step > 0}
+        isActive={!isSavedTrip && step === 0}
+        isDone={isSavedTrip || step > 0}
         onComplete={() => setStep(1)}
       />
 
@@ -48,15 +51,15 @@ export default function ResultCard(props: Props) {
 
       <ItineraryTimeline
         itinerary={props.itinerary}
-        isActive={step === 1}
-        isDone={step > 1}
+        isActive={!isSavedTrip && step === 1}
+        isDone={isSavedTrip || step > 1}
         onComplete={() => setStep(2)}
       />
 
       <InsightCards
         tips={props.tips}
-        isActive={step === 2}
-        isDone={step > 2}
+        isActive={!isSavedTrip && step === 2}
+        isDone={isSavedTrip || step > 2}
         onComplete={() => setStep(3)}
       />
 
@@ -85,6 +88,7 @@ export default function ResultCard(props: Props) {
               budget: props.budget,
               days: props.days,
             }}
+            alreadySaved={isSavedTrip}
           />
         </motion.div>
       )}

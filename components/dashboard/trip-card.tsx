@@ -37,6 +37,11 @@ export default function TripCard({ trip, onDeleted }: Props) {
         city: trip.city,
         itinerary: trip.itinerary,
         tips: trip.tips,
+        coordinates: trip.coordinates,                 
+        bestSeason: trip.best_season,                   
+        estimatedDailyBudget: trip.estimated_daily_budget, 
+        heroImageQuery: trip.hero_image_query,          
+        galleryQueries: trip.gallery_queries,
       })
     );
     sessionStorage.setItem(
@@ -47,6 +52,8 @@ export default function TripCard({ trip, onDeleted }: Props) {
         days: trip.days,
       })
     );
+    sessionStorage.setItem("atlas_trip_saved", "true");
+    sessionStorage.setItem("atlas_trip_id", trip.id);
     router.push("/trip");
   };
 

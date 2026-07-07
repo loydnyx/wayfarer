@@ -12,13 +12,14 @@ import { signInWithGoogle } from "@/lib/auth/sign-in";
 type Props = {
   trip: TripResult;
   input: TripInput;
+  alreadySaved?: boolean;
 };
 
-export default function ActionButtons({ trip, input }: Props) {
+export default function ActionButtons({ trip, input, alreadySaved }: Props) {
   const { user } = useUser();
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(alreadySaved);
   const [saveError, setSaveError] = useState("");
 
   const handleExportPDF = () => {

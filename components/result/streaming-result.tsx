@@ -7,18 +7,25 @@ type Props = {
   text: string;
   speed?: number;
   onComplete?: () => void;
+  instant?: boolean;
 };
 
 export default function StreamingResult({
   text,
   speed = 10,
   onComplete,
+  instant = false,
 }: Props) {
-  const [display, setDisplay] = useState("");
+  const [display, setDisplay] = useState(instant ? text : "");
 
   useEffect(() => {
-    setDisplay("");
+    if (instant) {
+      setDisplay(text);
+      onComplete?.();
+      return;
+    }
 
+    setDisplay("");
     let i = 0;
 
     const interval = setInterval(() => {
@@ -32,18 +39,14 @@ export default function StreamingResult({
     }, speed);
 
     return () => clearInterval(interval);
-  }, [text, speed]);
+  }, [text, speed, instant]);
 
   return (
     <span className="prose prose-invert prose-sm max-w-none align-baseline leading-7 text-slate-300">
-      <ReactMarkdown
-        components={{
-          p: ({ children }) => <span>{children}</span>,
-        }}
-      >
+      <ReactMarkdown components={{ p: ({ children }) => <span>{children}</span> }}>
         {display}
       </ReactMarkdown>
-      {display.length < text.length && (
+      {!instant && display.length < text.length && (
         <span className="text-cyan-400 animate-pulse">█</span>
       )}
     </span>

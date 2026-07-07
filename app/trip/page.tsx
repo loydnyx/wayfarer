@@ -13,18 +13,27 @@ export default function TripPage() {
   const [formInput, setFormInput] = useState<TripInput | null>(null);
   const [trip, setTrip] = useState<TripResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSavedTrip, setIsSavedTrip] = useState(false);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const userScrolledUpRef = useRef(false);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     const storedTrip = sessionStorage.getItem("atlas_trip_result");
     const storedInput = sessionStorage.getItem("atlas_trip_input");
+    const savedFlag = sessionStorage.getItem("atlas_trip_saved");
 
     if (storedTrip && storedInput) {
       setTrip(JSON.parse(storedTrip));
       setFormInput(JSON.parse(storedInput));
+      setIsSavedTrip(savedFlag === "true");
     }
+
+    sessionStorage.removeItem("atlas_trip_saved");
 
     setLoading(false);
   }, []);
@@ -56,6 +65,10 @@ export default function TripPage() {
 
     return () => observer.disconnect();
   }, [trip]);
+
+  // BAGO — dynamic route + label depende sa context
+  const backHref = isSavedTrip ? "/dashboard/trips" : "/";
+  const backLabel = isSavedTrip ? "Return" : "Back to Planner";
 
   if (loading) {
     return (
@@ -102,7 +115,7 @@ export default function TripPage() {
       {/* Sticky mobile app-bar */}
       <div className="fixed inset-x-0 top-0 z-50 flex items-center gap-3 border-b border-white/10 bg-[#050816]/95 px-4 py-3 backdrop-blur-xl lg:hidden">
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push(backHref)}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
           aria-label="Back"
         >
@@ -118,14 +131,14 @@ export default function TripPage() {
         <div className="mx-auto max-w-3xl" ref={contentRef}>
           {/* Desktop-only back link */}
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push(backHref)}
             className="group mb-10 hidden items-center gap-2 text-sm font-medium text-slate-400 transition-colors hover:text-cyan-300 lg:inline-flex"
           >
             <ArrowLeft
               size={16}
               className="transition-transform group-hover:-translate-x-1"
             />
-            Back to Planner
+            {backLabel}
           </button>
 
           <ResultCard
@@ -143,6 +156,7 @@ export default function TripPage() {
             estimatedDailyBudget={trip.estimatedDailyBudget}
             heroImageQuery={trip.heroImageQuery}
             galleryQueries={trip.galleryQueries}
+            isSavedTrip={isSavedTrip}
           />
         </div>
       </main>
