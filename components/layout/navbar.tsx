@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/use-user";
 import { signInWithGoogle } from "@/lib/auth/sign-in";
 import { signOut } from "@/lib/auth/sign-out";
+import { link } from "fs/promises";
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -28,7 +29,11 @@ export default function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="hover:text-white transition-colors"
+              onClick={() => {
+                console.log("clicked:", link.label);
+                setMenuOpen(false);
+              }}
+              className="rounded-lg px-3 py-3 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
             >
               {link.label}
             </a>
@@ -82,7 +87,7 @@ export default function Navbar() {
                 </div>
               ) : (
                 <button
-                  onClick={signInWithGoogle}
+                  onClick={() => signInWithGoogle()}
                   className="hidden rounded-full bg-blue-500 px-5 py-2 text-sm font-medium transition hover:bg-blue-400 sm:block"
                 >
                   Sign In
@@ -115,7 +120,13 @@ export default function Navbar() {
                 <a
                   key={link.href}
                   href={link.href}
-                  onClick={() => setMenuOpen(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMenuOpen(false);
+                    setTimeout(() => {
+                      document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" });
+                    }, 300);
+                  }}
                   className="rounded-lg px-3 py-3 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
                 >
                   {link.label}
@@ -132,7 +143,7 @@ export default function Navbar() {
                 </button>
               ) : (
                 <button
-                  onClick={signInWithGoogle}
+                  onClick={() => signInWithGoogle()}
                   className="mt-2 rounded-full bg-blue-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-blue-400"
                 >
                   Sign In

@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, MapPin, Heart, Settings, LogOut } from "lucide-react";
-import { signOut } from "@/lib/auth/sign-out";
+import { Home, MapPin, Heart, Settings } from "lucide-react";
 
 const navItems = [
   { label: "Home", href: "/dashboard", icon: Home },
@@ -42,14 +41,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      <button
-        onClick={signOut}
-        className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
-      >
-        <LogOut size={18} />
-        Sign Out
-      </button>
     </aside>
   );
 }

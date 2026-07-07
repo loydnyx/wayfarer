@@ -19,68 +19,82 @@ export default async function DashboardHome() {
   const recentTrips = trips?.slice(0, 3) ?? [];
 
   return (
-    <div className="p-6 lg:p-10">
-      <h1 className="text-3xl font-bold text-white">Welcome back, {firstName} 👋</h1>
-      <p className="mt-2 text-slate-400">
+    <div className="px-4 py-4 sm:px-6 sm:py-8 lg:p-10">
+      <h1 className="text-xl font-bold text-white sm:text-3xl">
+        Welcome back, {firstName} 👋
+      </h1>
+      <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">
         Here's a quick look at your travel planning activity.
       </p>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <div className="flex items-center gap-2 text-slate-400">
-            <MapPin size={16} />
-            <span className="text-sm">Trips Planned</span>
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-5">
+          <div className="flex items-center gap-1.5 text-slate-400 sm:gap-2">
+            <MapPin size={14} className="sm:size-4" />
+            <span className="text-xs sm:text-sm">Trips Planned</span>
           </div>
-          <p className="mt-2 text-3xl font-bold text-white">{totalTrips}</p>
+          <p className="mt-1 text-2xl font-bold text-white sm:mt-2 sm:text-3xl">
+            {totalTrips}
+          </p>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <div className="flex items-center gap-2 text-slate-400">
-            <Globe size={16} />
-            <span className="text-sm">Countries</span>
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-5">
+          <div className="flex items-center gap-1.5 text-slate-400 sm:gap-2">
+            <Globe size={14} className="sm:size-4" />
+            <span className="text-xs sm:text-sm">Countries</span>
           </div>
-          <p className="mt-2 text-3xl font-bold text-white">{uniqueCountries}</p>
+          <p className="mt-1 text-2xl font-bold text-white sm:mt-2 sm:text-3xl">
+            {uniqueCountries}
+          </p>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <div className="flex items-center gap-2 text-slate-400">
-            <Wallet size={16} />
-            <span className="text-sm">Status</span>
+        <div className="col-span-2 rounded-2xl border border-white/10 bg-white/5 p-3 sm:col-span-1 sm:p-5">
+          <div className="flex items-center gap-1.5 text-slate-400 sm:gap-2">
+            <Wallet size={14} className="sm:size-4" />
+            <span className="text-xs sm:text-sm">Status</span>
           </div>
-          <p className="mt-2 text-3xl font-bold text-white">Free Plan</p>
+          <p className="mt-1 text-2xl font-bold text-white sm:mt-2 sm:text-3xl">
+            Free Plan
+          </p>
         </div>
       </div>
 
-      <div className="mt-10">
+      <div className="mt-6 sm:mt-10">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white">Recent Trips</h2>
+          <h2 className="text-base font-semibold text-white sm:text-xl">
+            Recent Trips
+          </h2>
           {totalTrips > 0 && (
-            <Link href="/dashboard/trips" className="text-sm text-cyan-400 hover:underline">
+            <Link href="/dashboard/trips" className="text-xs text-cyan-400 hover:underline sm:text-sm">
               View all
             </Link>
           )}
         </div>
 
         {recentTrips.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
-            <p className="text-slate-400">You haven't planned any trips yet.</p>
+          <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-6 text-center sm:mt-6 sm:p-8">
+            <p className="text-sm text-slate-400 sm:text-base">
+              You haven't planned any trips yet.
+            </p>
             <Link href="/" className="mt-2 inline-block text-sm text-cyan-400 hover:underline">
               Plan your first trip
             </Link>
           </div>
         ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {recentTrips.map((trip) => (
               <Link
                 key={trip.id}
                 href="/dashboard/trips"
-                className="rounded-2xl border border-white/10 bg-white/5 p-5 transition-colors hover:border-cyan-500/30"
+                className="rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-cyan-500/30 sm:p-5"
               >
                 <span className="inline-block rounded-full bg-cyan-500/10 px-2.5 py-1 text-xs font-medium text-cyan-300">
                   {trip.status}
                 </span>
-                <h3 className="mt-2 font-semibold text-white">{trip.title}</h3>
-                <p className="mt-1 text-sm text-slate-400">
+                <h3 className="mt-2 text-sm font-semibold text-white sm:text-base">
+                  {trip.title}
+                </h3>
+                <p className="mt-1 text-xs text-slate-400 sm:text-sm">
                   {trip.destination} • {trip.days} Days
                 </p>
               </Link>

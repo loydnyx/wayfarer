@@ -53,18 +53,18 @@ export default function FavoritesPage() {
         Destinations you're dreaming about for your next adventure.
       </p>
 
-      <div className="mt-8 flex gap-3">
+      <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
         <input
           value={newDestination}
           onChange={(e) => setNewDestination(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           placeholder="Add a destination, e.g. Kyoto, Japan"
-          className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white outline-none focus:border-cyan-400"
+          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white outline-none focus:border-cyan-400 sm:flex-1"
         />
         <button
           onClick={handleAdd}
           disabled={adding || !newDestination.trim()}
-          className="flex items-center gap-2 rounded-xl bg-cyan-500 px-5 py-2.5 text-sm font-medium text-black transition-colors hover:bg-cyan-400 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-500 px-5 py-2.5 text-sm font-medium text-black transition-colors hover:bg-cyan-400 disabled:opacity-50 sm:w-auto"
         >
           <Plus size={16} />
           Add

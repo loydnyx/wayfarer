@@ -6,7 +6,6 @@ import ResultCard from "@/components/planner/result-card";
 import { Button } from "@/components/ui/button";
 import type { TripInput, TripResult } from "@/types/trip";
 
-
 import { ArrowLeft } from "lucide-react";
 
 export default function TripPage() {
@@ -30,7 +29,6 @@ export default function TripPage() {
     setLoading(false);
   }, []);
 
-  // Detect if the user manually scrolls up — if so, stop auto-scrolling
   useEffect(() => {
     const handleScroll = () => {
       const nearBottom =
@@ -42,7 +40,6 @@ export default function TripPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Auto-scroll to bottom as content grows, unless the user scrolled up
   useEffect(() => {
     if (!contentRef.current) return;
 
@@ -62,8 +59,8 @@ export default function TripPage() {
 
   if (loading) {
     return (
-      <main className="relative min-h-screen bg-[#050816] px-6 py-16">
-        <div className="mx-auto max-w-3xl animate-pulse space-y-10">
+      <main className="relative min-h-screen bg-[#050816] px-4 py-6 sm:px-6 sm:py-16">
+        <div className="mx-auto max-w-3xl animate-pulse space-y-6 sm:space-y-10">
           <div className="h-8 w-40 rounded-full bg-white/5" />
 
           <div className="space-y-3">
@@ -98,37 +95,57 @@ export default function TripPage() {
     );
   }
 
+  const appBarTitle = `${formInput.destination} — ${formInput.days} Days`;
+
   return (
-    <main className="relative min-h-screen bg-[#050816] px-6 py-16">
-      <div className="mx-auto max-w-3xl" ref={contentRef}>
+    <>
+      {/* Sticky mobile app-bar */}
+      <div className="fixed inset-x-0 top-0 z-50 flex items-center gap-3 border-b border-white/10 bg-[#050816]/95 px-4 py-3 backdrop-blur-xl lg:hidden">
         <button
           onClick={() => router.push("/")}
-          className="group mb-10 inline-flex items-center gap-2 text-sm font-medium text-slate-400 transition-colors hover:text-cyan-300"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+          aria-label="Back"
         >
-          <ArrowLeft
-            size={16}
-            className="transition-transform group-hover:-translate-x-1"
-          />
-          Back to Planner
+          <ArrowLeft size={20} />
         </button>
-
-        <ResultCard
-          destination={formInput.destination}
-          budget={formInput.budget}
-          days={formInput.days}
-          title={trip.title}
-          summary={trip.summary}
-          itinerary={trip.itinerary}
-          tips={trip.tips}
-          country={trip.country}
-          city={trip.city}
-          coordinates={trip.coordinates}
-          bestSeason={trip.bestSeason}
-          estimatedDailyBudget={trip.estimatedDailyBudget}
-          heroImageQuery={trip.heroImageQuery}
-          galleryQueries={trip.galleryQueries}
-        />
+        <p className="flex-1 truncate text-center text-sm font-medium text-white">
+          {appBarTitle}
+        </p>
+        <div className="w-8 shrink-0" />
       </div>
-    </main>
+
+      <main className="relative min-h-screen bg-[#050816] px-4 pb-6 pt-16 sm:px-6 sm:py-16 lg:pt-16">
+        <div className="mx-auto max-w-3xl" ref={contentRef}>
+          {/* Desktop-only back link */}
+          <button
+            onClick={() => router.push("/")}
+            className="group mb-10 hidden items-center gap-2 text-sm font-medium text-slate-400 transition-colors hover:text-cyan-300 lg:inline-flex"
+          >
+            <ArrowLeft
+              size={16}
+              className="transition-transform group-hover:-translate-x-1"
+            />
+            Back to Planner
+          </button>
+
+          <ResultCard
+            destination={formInput.destination}
+            budget={formInput.budget}
+            days={formInput.days}
+            title={trip.title}
+            summary={trip.summary}
+            itinerary={trip.itinerary}
+            tips={trip.tips}
+            country={trip.country}
+            city={trip.city}
+            coordinates={trip.coordinates}
+            bestSeason={trip.bestSeason}
+            estimatedDailyBudget={trip.estimatedDailyBudget}
+            heroImageQuery={trip.heroImageQuery}
+            galleryQueries={trip.galleryQueries}
+          />
+        </div>
+      </main>
+    </>
   );
 }
