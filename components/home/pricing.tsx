@@ -6,6 +6,7 @@ import { Check, ChevronDown } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { GlowCard } from "@/components/ui/glow-card";
 import { CURRENCIES, formatPrice } from "@/lib/currencies";
+import { useUserCurrency } from "@/hooks/use-user-currency";
 
 const plans = [
   {
@@ -50,10 +51,15 @@ const plans = [
 ];
 
 export default function Pricing() {
+  const { currencyCode: preferredCurrency } = useUserCurrency();
   const [currencyCode, setCurrencyCode] = useState("PHP");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [rates, setRates] = useState<Record<string, number>>({ PHP: 1 });
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setCurrencyCode(preferredCurrency);
+  }, [preferredCurrency]);
 
   useEffect(() => {
     fetch("/api/exchange-rates")
