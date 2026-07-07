@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import AnimatedBackground from "@/components/common/animated-background";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -7,7 +9,14 @@ import WhyWayfarer from "@/components/home/why-wayfarer";
 import HowItWorks from "@/components/home/how-it-works";
 import Pricing from "@/components/home/pricing";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+
+  if (data.user) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="relative min-h-screen overflow-x-hidden bg-[#050816]">
       <AnimatedBackground />
