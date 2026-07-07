@@ -14,7 +14,6 @@ export default function MobilePlannerSheet({ open, onClose }: Props) {
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -24,7 +23,6 @@ export default function MobilePlannerSheet({ open, onClose }: Props) {
             className="fixed inset-0 z-[90] bg-black/70 backdrop-blur-sm lg:hidden"
           />
 
-          {/* Sheet */}
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -32,7 +30,6 @@ export default function MobilePlannerSheet({ open, onClose }: Props) {
             transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
             className="fixed inset-x-0 bottom-0 z-[95] max-h-[88vh] overflow-y-auto rounded-t-3xl border-t border-white/10 bg-[#0a0e1a] pb-[env(safe-area-inset-bottom)] lg:hidden"
           >
-            {/* Drag handle */}
             <div className="sticky top-0 z-10 flex justify-center bg-[#0a0e1a] pt-3">
               <div className="h-1.5 w-10 rounded-full bg-white/20" />
             </div>

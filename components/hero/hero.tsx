@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import PlannerFlow from "@/components/planner/planner-flow";
 import FloatingWidgets from "./floating-widgets";
+import MobilePlannerSheet from "./mobile-planner-sheet";
 
 import { HeroBadge } from "@/components/ui/hero-badge";
 import { GradientText } from "@/components/ui/gradient-text";
@@ -10,10 +13,12 @@ import { AnimatedButton } from "@/components/ui/animated-button";
 import { Container } from "@/components/ui/container";
 
 export default function Hero() {
+  const [sheetOpen, setSheetOpen] = useState(false);
+
   return (
-    <section className="relative py-20">
+    <section className="relative py-16 lg:py-20">
       <Container>
-        <div className="grid items-center gap-20 lg:grid-cols-2">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
           {/* LEFT */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -22,20 +27,25 @@ export default function Hero() {
           >
             <HeroBadge />
 
-            <h1 className="mt-8 text-6xl font-black leading-tight lg:text-7xl">
+            <h1 className="mt-6 text-4xl font-black leading-tight sm:mt-8 sm:text-6xl lg:text-7xl">
               Plan Smarter.
               <br />
               <GradientText>Travel Further.</GradientText>
             </h1>
 
-            <p className="mt-8 max-w-xl text-lg leading-8 text-slate-400">
+            <p className="mt-4 max-w-xl text-base leading-7 text-slate-400 sm:mt-8 sm:text-lg sm:leading-8">
               Wayfarer builds personalized travel plans, predicts your expenses,
               recommends flights, hotels, restaurants, and creates the perfect
               itinerary in seconds.
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-4">
-              <AnimatedButton size="lg">Start Planning</AnimatedButton>
+            <div className="mt-6 flex flex-wrap gap-4 sm:mt-10">
+              <AnimatedButton size="lg" onClick={() => setSheetOpen(true)} className="lg:hidden">
+                Start Planning
+              </AnimatedButton>
+              <AnimatedButton size="lg" className="hidden lg:inline-flex">
+                Start Planning
+              </AnimatedButton>
               <AnimatedButton size="lg" variant="outline" className="bg-transparent">
                 Watch Demo
               </AnimatedButton>
@@ -49,13 +59,33 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
           >
-            <div className="relative px-16 py-12">
+            {/* Desktop planner */}
+            <div className="relative hidden px-16 py-12 lg:block">
               <FloatingWidgets />
               <PlannerFlow />
             </div>
+
+            {/* Mobile trigger card */}
+            <button
+              type="button"
+              onClick={() => setSheetOpen(true)}
+              className="flex w-full items-center gap-4 rounded-2xl border border-cyan-500/20 bg-white/5 p-5 text-left transition-colors hover:border-cyan-500/40 lg:hidden"
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10">
+                <Sparkles className="text-cyan-400" size={22} />
+              </div>
+              <div>
+                <p className="font-semibold text-white">Tap to start planning</p>
+                <p className="mt-0.5 text-sm text-slate-400">
+                  Destination, budget, and days — AI does the rest.
+                </p>
+              </div>
+            </button>
           </motion.div>
         </div>
       </Container>
+
+      <MobilePlannerSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
     </section>
   );
 }
