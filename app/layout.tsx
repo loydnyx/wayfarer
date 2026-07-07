@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 
@@ -7,8 +7,21 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Atlas",
+  title: "Wayfarer",
   description: "The AI Travel Operating System",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Wayfarer",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#050816",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

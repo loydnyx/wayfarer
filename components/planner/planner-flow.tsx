@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import PlannerForm from "./planner-form";
 import { Button } from "@/components/ui/button";
 import type { TripInput, TripResult } from "@/types/trip";
@@ -40,7 +41,6 @@ export default function PlannerFlow() {
         throw new Error("AI returned invalid JSON");
       }
 
-      // Save to sessionStorage and navigate to the result page
       sessionStorage.setItem("atlas_trip_result", JSON.stringify(parsed));
       sessionStorage.setItem("atlas_trip_input", JSON.stringify(data));
 
@@ -64,7 +64,29 @@ export default function PlannerFlow() {
     <div className="w-full max-w-xl mx-auto space-y-6">
       {state === "idle" && <PlannerForm onGenerate={handleGenerate} />}
 
-      {state === "thinking" && <AIConsole />}
+      {/* Desktop: inline thinking state */}
+      {state === "thinking" && (
+        <div className="hidden lg:block">
+          <AIConsole />
+        </div>
+      )}
+
+      {/* Mobile: full-screen immersive loader overlay */}
+      <AnimatePresence>
+        {state === "thinking" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[100] flex h-screen w-full items-center justify-center overflow-hidden bg-[#050816]/95 backdrop-blur-md px-5 lg:hidden"
+          >
+            <div className="w-full max-w-sm">
+              <AIConsole />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {state === "error" && (
         <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-6 text-center space-y-4">
