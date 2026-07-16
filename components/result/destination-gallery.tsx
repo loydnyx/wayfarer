@@ -259,7 +259,7 @@ export default function DestinationGallery({
         })}
       </div>
 
-      {/* Lightbox modal */}
+{/* Lightbox modal */}
       <AnimatePresence>
         {lightboxImage && (
           <motion.div
@@ -267,11 +267,11 @@ export default function DestinationGallery({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setLightboxImage(null)}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm sm:p-8"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-0 backdrop-blur-sm sm:p-8"
           >
             <button
               onClick={() => setLightboxImage(null)}
-              className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6 sm:top-6"
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:right-6 sm:top-6 sm:bg-white/10"
               aria-label="Close"
             >
               <X size={20} />
@@ -283,20 +283,19 @@ export default function DestinationGallery({
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-h-[85vh] max-w-4xl overflow-hidden rounded-2xl"
+              className="relative flex h-full w-full items-center justify-center sm:h-auto sm:max-h-[85vh] sm:w-auto sm:max-w-4xl sm:overflow-hidden sm:rounded-2xl"
             >
               <img
                 src={lightboxImage.image.url}
                 alt={lightboxImage.image.alt}
-                className="max-h-[85vh] w-full object-contain"
+                className="h-full w-full object-contain sm:h-auto sm:max-h-[85vh]"
               />
-              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/80 to-transparent px-5 py-4">
-                <p className="text-sm font-medium capitalize text-white">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-4 pb-6 pt-10 sm:px-5 sm:pb-4 sm:pt-8">
+                <p className="text-sm font-semibold capitalize text-white sm:text-sm sm:font-medium">
                   {lightboxImage.caption}
                 </p>
-                {/* BAGO — hiwalay na links, may UTM */}
-                <p className="flex items-center gap-1 text-xs text-slate-300">
-                  Photo by{" "}
+                <p className="mt-1 flex flex-wrap items-center gap-x-1 text-xs text-slate-300 sm:mt-0">
+                  <span>Photo by</span>
                   <a
                     href={withUtm(lightboxImage.image.creditLink)}
                     target="_blank"
@@ -305,18 +304,18 @@ export default function DestinationGallery({
                     className="hover:text-white hover:underline"
                   >
                     {lightboxImage.image.credit}
-                  </a>{" "}
-                  on{" "}
+                  </a>
+                  <span>on</span>
                   <a
                     href={withUtm("https://unsplash.com")}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="hover:text-white hover:underline"
+                    className="inline-flex items-center gap-1 hover:text-white hover:underline"
                   >
                     Unsplash
+                    <ExternalLink size={11} />
                   </a>
-                  <ExternalLink size={12} />
                 </p>
               </div>
             </motion.div>

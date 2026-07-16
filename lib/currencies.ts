@@ -17,6 +17,11 @@ export const CURRENCIES: Currency[] = [
   { code: "INR", symbol: "₹", label: "Indian Rupee" },
   { code: "AED", symbol: "AED", label: "UAE Dirham" },
   { code: "HKD", symbol: "HK$", label: "Hong Kong Dollar" },
+  { code: "THB", symbol: "฿", label: "Thai Baht" }, 
+  { code: "VND", symbol: "₫", label: "Vietnamese Dong" }, 
+  { code: "MYR", symbol: "RM", label: "Malaysian Ringgit" }, 
+  { code: "IDR", symbol: "Rp", label: "Indonesian Rupiah" }, 
+  { code: "CNY", symbol: "¥", label: "Chinese Yuan" },
 ];
 
 export function formatPrice(
@@ -30,7 +35,7 @@ export function formatPrice(
   const rate = rates[currencyCode] ?? 1;
   const converted = phpAmount * rate;
 
-  const decimals = ["JPY", "KRW"].includes(currencyCode) ? 0 : 2;
+  const decimals = ["JPY", "KRW", "VND", "IDR"].includes(currencyCode) ? 0 : 2; // BAGO — dinagdagan ng VND, IDR (walang decimals din)
 
   return `${currency.symbol}${converted.toLocaleString(undefined, {
     minimumFractionDigits: decimals,

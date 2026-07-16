@@ -16,7 +16,6 @@ export function exportTripToPDF(trip: TripResult, input: TripInput) {
     }
   };
 
-  // Title
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   doc.setTextColor(20, 20, 20);
@@ -24,14 +23,12 @@ export function exportTripToPDF(trip: TripResult, input: TripInput) {
   doc.text(titleLines, margin, y);
   addSpace(titleLines.length * 24 + 10);
 
-  // Subtitle
   doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
   doc.setTextColor(100, 100, 100);
   doc.text(`Personalized itinerary for ${input.destination}`, margin, y);
   addSpace(30);
 
-  // Summary
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(20, 150, 170);
@@ -46,7 +43,6 @@ export function exportTripToPDF(trip: TripResult, input: TripInput) {
   doc.text(summaryLines, margin, y);
   addSpace(summaryLines.length * 14 + 20);
 
-  // Stats
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10.5);
   doc.setTextColor(20, 20, 20);
@@ -55,24 +51,54 @@ export function exportTripToPDF(trip: TripResult, input: TripInput) {
   if (trip.country) doc.text(`Country: ${trip.country}`, margin + 340, y);
   addSpace(30);
 
-  // Itinerary
+  if (!trip.budgetFeasible && trip.budgetNote) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.setTextColor(180, 120, 20);
+    const noteLines = doc.splitTextToSize(`Budget Note: ${trip.budgetNote}`, maxWidth);
+    doc.text(noteLines, margin, y);
+    addSpace(noteLines.length * 14 + 16);
+  }
+
+  if (trip.flightEstimate) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10.5);
+    doc.setTextColor(60, 60, 60);
+    const flightLines = doc.splitTextToSize(`Flight Estimate: ${trip.flightEstimate}`, maxWidth);
+    doc.text(flightLines, margin, y);
+    addSpace(flightLines.length * 14 + 16);
+  }
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(20, 150, 170);
   doc.text("Itinerary", margin, y);
   addSpace(20);
 
-  trip.itinerary.forEach((day, i) => {
+  trip.itinerary.forEach((dayItem, i) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10.5);
     doc.setTextColor(20, 20, 20);
-    const cleanDay = day.replace(/\*\*/g, "");
+    const cleanDay = dayItem.day.replace(/\*\*/g, "");
     const dayLines = doc.splitTextToSize(`${i + 1}. ${cleanDay}`, maxWidth);
     doc.text(dayLines, margin, y);
-    addSpace(dayLines.length * 14 + 12);
+    addSpace(dayLines.length * 14 + 4);
+
+    if (dayItem.userCost) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(9.5);
+      doc.setTextColor(0, 150, 170);
+      const costLine =
+        dayItem.localCost && dayItem.localCost !== dayItem.userCost
+          ? `Est. cost: ${dayItem.userCost} (${dayItem.localCost})`
+          : `Est. cost: ${dayItem.userCost}`;
+      doc.text(costLine, margin + 14, y);
+      addSpace(16);
+    } else {
+      addSpace(8);
+    }
   });
 
-  // Tips
   if (trip.tips?.length) {
     addSpace(10);
     doc.setFont("helvetica", "bold");
@@ -92,7 +118,6 @@ export function exportTripToPDF(trip: TripResult, input: TripInput) {
     });
   }
 
-  // Footer
   doc.setFont("helvetica", "italic");
   doc.setFontSize(9);
   doc.setTextColor(150, 150, 150);

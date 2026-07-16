@@ -99,7 +99,7 @@ export default async function DashboardHome() {
               <Link
                 key={trip.id}
                 href="/dashboard/trips"
-                className="overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-cyan-500/30 sm:rounded-2xl"
+                className="group overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-cyan-500/30 sm:rounded-2xl"
               >
                 {/* Thumbnail — gamit ang naka-cache na hero image */}
                 <div className="relative h-20 w-full overflow-hidden bg-gradient-to-br from-cyan-500/10 via-slate-900 to-black sm:h-28">
@@ -107,7 +107,7 @@ export default async function DashboardHome() {
                     <img
                       src={trip.hero_image.thumbUrl}
                       alt={trip.hero_image.alt || trip.destination}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">

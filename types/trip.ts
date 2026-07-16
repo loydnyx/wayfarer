@@ -11,13 +11,19 @@ export type Coordinates = {
 };
 
 export type UnsplashImage = {
-  id?: string; // BAGO
+  id?: string;
   url: string;
   thumbUrl: string;
   alt: string;
   credit: string;
   creditLink: string;
-  downloadLocation?: string | null; // BAGO
+  downloadLocation?: string | null;
+};
+
+export type ItineraryDay = {
+  day: string;
+  userCost: string;
+  localCost: string;
 };
 
 export type TripResult = {
@@ -41,7 +47,7 @@ export type TripResult = {
 
   galleryQueries: string[];
 
-  itinerary: string[];
+  itinerary: ItineraryDay[];
 
   tips: string[];
 

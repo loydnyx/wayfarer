@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { TripInput } from "@/types/trip";
@@ -14,6 +15,7 @@ type Props = {
 
 export default function PlannerForm({ onGenerate }: Props) {
   const { currencyCode: preferredCurrency } = useUserCurrency();
+  const searchParams = useSearchParams(); // BAGO
 
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
@@ -31,6 +33,15 @@ export default function PlannerForm({ onGenerate }: Props) {
   useEffect(() => {
     setBudgetCurrency(preferredCurrency);
   }, [preferredCurrency]);
+
+  // BAGO — i-prefill ang destination galing sa ?destination= query param
+  // (hal. mula sa "Plan a Trip" button sa Favorites page)
+  useEffect(() => {
+    const destParam = searchParams.get("destination");
+    if (destParam) {
+      setDestination(destParam);
+    }
+  }, [searchParams]);
 
   const filteredOriginSuggestions =
     origin.trim().length > 0
