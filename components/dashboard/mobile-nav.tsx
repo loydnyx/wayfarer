@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, MapPin, Heart, Settings } from "lucide-react";
+import { Home, Sparkles, MapPin, Heart, Settings } from "lucide-react";
 
 const navItems = [
   { label: "Home", href: "/dashboard", icon: Home },
+  { label: "Plan", href: "/dashboard/plan", icon: Sparkles },
   { label: "Trips", href: "/dashboard/trips", icon: MapPin },
   { label: "Favorites", href: "/dashboard/favorites", icon: Heart },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
@@ -24,11 +25,11 @@ export default function MobileNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-col items-center gap-1 px-3 py-1.5 text-xs ${
+            className={`flex flex-col items-center gap-1 px-2 py-1.5 text-[10px] ${
               isActive ? "text-cyan-300" : "text-slate-400"
             }`}
           >
-            <Icon size={20} />
+            <Icon size={18} />
             {item.label}
           </Link>
         );

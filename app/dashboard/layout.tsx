@@ -17,7 +17,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#050816]">
+    <div className="flex min-h-screen bg-background">
       <PendingSaveHandler />
       <Sidebar />
       <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">{children}</main>

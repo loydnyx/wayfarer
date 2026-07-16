@@ -66,9 +66,9 @@ export default function TripPage() {
     return () => observer.disconnect();
   }, [trip]);
 
-  // BAGO — dynamic route + label depende sa context
+  // FIXED — tamang routes na
   const backHref = isSavedTrip ? "/dashboard/trips" : "/";
-  const backLabel = isSavedTrip ? "Return" : "Back to Planner";
+  const backLabel = isSavedTrip ? "Back to Dashboard" : "Back to Planner";
 
   if (loading) {
     return (
@@ -103,7 +103,7 @@ export default function TripPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
         <p className="text-slate-400">No trip found. Generate one first.</p>
-        <Button onClick={() => router.push("/")}>Back to Planner</Button>
+        <Button onClick={() => router.push(backHref)}>Back to Planner</Button>
       </div>
     );
   }
@@ -156,7 +156,12 @@ export default function TripPage() {
             estimatedDailyBudget={trip.estimatedDailyBudget}
             heroImageQuery={trip.heroImageQuery}
             galleryQueries={trip.galleryQueries}
+            heroImage={trip.heroImage}
+            galleryImages={trip.galleryImages}
             isSavedTrip={isSavedTrip}
+            budgetFeasible={trip.budgetFeasible}
+            budgetNote={trip.budgetNote}
+            flightEstimate={trip.flightEstimate}
           />
         </div>
       </main>

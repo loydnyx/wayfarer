@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { MapPin, Globe, Wallet } from "lucide-react";
+import { MapPin, Globe, Wallet, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export default async function DashboardHome() {
@@ -20,12 +20,24 @@ export default async function DashboardHome() {
 
   return (
     <div className="px-4 py-4 sm:px-6 sm:py-8 lg:p-10">
-      <h1 className="text-xl font-bold text-white sm:text-3xl">
-        Welcome back, {firstName} 👋
-      </h1>
-      <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">
-        Here's a quick look at your travel planning activity.
-      </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white sm:text-3xl">
+            Welcome back, {firstName} 👋
+          </h1>
+          <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">
+            Here's a quick look at your travel planning activity.
+          </p>
+        </div>
+
+        <Link
+          href="/dashboard/plan"
+          className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-cyan-500 px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-cyan-400"
+        >
+          <Sparkles size={16} />
+          Plan New Trip
+        </Link>
+      </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-5">
@@ -76,7 +88,7 @@ export default async function DashboardHome() {
             <p className="text-sm text-slate-400 sm:text-base">
               You haven't planned any trips yet.
             </p>
-            <Link href="/" className="mt-2 inline-block text-sm text-cyan-400 hover:underline">
+            <Link href="/dashboard/plan" className="mt-2 inline-block text-sm text-cyan-400 hover:underline">
               Plan your first trip
             </Link>
           </div>

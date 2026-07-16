@@ -8,6 +8,7 @@ import InsightCards from "@/components/result/insight-cards";
 import ActionButtons from "@/components/result/action-buttons";
 import TripStats from "@/components/result/trip-stats";
 import ResultHero from "@/components/result/result-hero";
+import DestinationGallery from "@/components/result/destination-gallery";
 
 import type { TripResult } from "@/types/trip";
 
@@ -15,18 +16,25 @@ type Props = TripResult & {
   destination: string;
   budget: string;
   days: string;
-  isSavedTrip?: boolean; // BAGO
+  isSavedTrip?: boolean;
 };
 
 export default function ResultCard(props: Props) {
   const { isSavedTrip = false } = props;
 
-  // Kung saved trip na, simulan agad sa step 3 (lahat done na, walang typing)
   const [step, setStep] = useState(isSavedTrip ? 3 : 0);
 
   return (
     <div className="space-y-10">
       <ResultHero title={props.title} destination={props.destination} />
+
+      <DestinationGallery
+        destination={props.destination}
+        heroImageQuery={props.heroImageQuery}
+        galleryQueries={props.galleryQueries}
+        cachedHeroImage={props.heroImage}       // BAGO
+        cachedGalleryImages={props.galleryImages} // BAGO
+      />
 
       <AIIntro
         summary={props.summary}
@@ -45,6 +53,9 @@ export default function ResultCard(props: Props) {
             budget={props.budget}
             days={props.days}
             country={props.country}
+            budgetFeasible={props.budgetFeasible}
+            budgetNote={props.budgetNote}
+            flightEstimate={props.flightEstimate}
           />
         </motion.div>
       )}
@@ -78,6 +89,9 @@ export default function ResultCard(props: Props) {
               coordinates: props.coordinates,
               bestSeason: props.bestSeason,
               estimatedDailyBudget: props.estimatedDailyBudget,
+              budgetFeasible: props.budgetFeasible,
+              budgetNote: props.budgetNote,
+              flightEstimate: props.flightEstimate,
               heroImageQuery: props.heroImageQuery,
               galleryQueries: props.galleryQueries,
               itinerary: props.itinerary,

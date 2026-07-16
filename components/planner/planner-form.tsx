@@ -15,21 +15,31 @@ type Props = {
 export default function PlannerForm({ onGenerate }: Props) {
   const { currencyCode: preferredCurrency } = useUserCurrency();
 
+  const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [budgetAmount, setBudgetAmount] = useState("");
   const [budgetCurrency, setBudgetCurrency] = useState("PHP");
   const [days, setDays] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
+  const [showDestSuggestions, setShowDestSuggestions] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const originRef = useRef<HTMLDivElement>(null);
+  const destRef = useRef<HTMLDivElement>(null);
   const currencyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setBudgetCurrency(preferredCurrency);
   }, [preferredCurrency]);
 
-  const filteredSuggestions =
+  const filteredOriginSuggestions =
+    origin.trim().length > 0
+      ? POPULAR_DESTINATIONS.filter((d) =>
+          d.toLowerCase().includes(origin.toLowerCase())
+        ).slice(0, 10)
+      : [];
+
+  const filteredDestSuggestions =
     destination.trim().length > 0
       ? POPULAR_DESTINATIONS.filter((d) =>
           d.toLowerCase().includes(destination.toLowerCase())
@@ -38,8 +48,11 @@ export default function PlannerForm({ onGenerate }: Props) {
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
+      if (originRef.current && !originRef.current.contains(e.target as Node)) {
+        setShowOriginSuggestions(false);
+      }
+      if (destRef.current && !destRef.current.contains(e.target as Node)) {
+        setShowDestSuggestions(false);
       }
       if (currencyRef.current && !currencyRef.current.contains(e.target as Node)) {
         setCurrencyDropdownOpen(false);
@@ -91,22 +104,64 @@ export default function PlannerForm({ onGenerate }: Props) {
 
     onGenerate({
       destination: destination.trim(),
+      origin: origin.trim() || undefined,
       budget: formattedBudget,
       days: days.trim(),
     });
   };
 
-  const selectSuggestion = (value: string) => {
+  const selectOriginSuggestion = (value: string) => {
+    setOrigin(value);
+    setShowOriginSuggestions(false);
+  };
+
+  const selectDestSuggestion = (value: string) => {
     setDestination(value);
     clearError("destination");
-    setShowSuggestions(false);
+    setShowDestSuggestions(false);
   };
 
   const selectedCurrency = CURRENCIES.find((c) => c.code === budgetCurrency);
 
   return (
     <div className="space-y-3">
-      <div className="relative" ref={wrapperRef}>
+      {/* Flying From (optional) */}
+      <div className="relative" ref={originRef}>
+        <label htmlFor="origin" className="mb-1.5 block text-xs text-slate-400">
+          Country From <span className="text-slate-600">(optional)</span>
+        </label>
+        <input
+          id="origin"
+          name="origin"
+          value={origin}
+          onChange={(e) => {
+            setOrigin(e.target.value);
+            setShowOriginSuggestions(true);
+          }}
+          onFocus={() => setShowOriginSuggestions(true)}
+          placeholder="Manila, Philippines"
+          autoComplete="off"
+          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
+        />
+
+        {showOriginSuggestions && filteredOriginSuggestions.length > 0 && (
+          <div className="custom-scrollbar absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl">
+            {filteredOriginSuggestions.map((place) => (
+              <button
+                key={place}
+                type="button"
+                onClick={() => selectOriginSuggestion(place)}
+                className="block w-full px-3 py-2 text-left text-xs text-slate-300 transition-colors hover:bg-cyan-500/10 hover:text-cyan-300"
+              >
+                {place}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Destination */}
+      <div className="relative" ref={destRef}>
         <label htmlFor="destination" className="mb-1.5 block text-xs text-slate-400">
           Destination
         </label>
@@ -117,9 +172,9 @@ export default function PlannerForm({ onGenerate }: Props) {
           onChange={(e) => {
             setDestination(e.target.value);
             clearError("destination");
-            setShowSuggestions(true);
+            setShowDestSuggestions(true);
           }}
-          onFocus={() => setShowSuggestions(true)}
+          onFocus={() => setShowDestSuggestions(true)}
           placeholder="Tokyo, Japan"
           autoComplete="off"
           className={`w-full rounded-lg border bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400 ${
@@ -130,13 +185,13 @@ export default function PlannerForm({ onGenerate }: Props) {
           <p className="mt-1 text-xs text-red-400">{errors.destination}</p>
         )}
 
-        {showSuggestions && filteredSuggestions.length > 0 && (
+        {showDestSuggestions && filteredDestSuggestions.length > 0 && (
           <div className="custom-scrollbar absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl">
-            {filteredSuggestions.map((place) => (
+            {filteredDestSuggestions.map((place) => (
               <button
                 key={place}
                 type="button"
-                onClick={() => selectSuggestion(place)}
+                onClick={() => selectDestSuggestion(place)}
                 className="block w-full px-3 py-2 text-left text-xs text-slate-300 transition-colors hover:bg-cyan-500/10 hover:text-cyan-300"
               >
                 {place}

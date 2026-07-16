@@ -1,5 +1,6 @@
 export type TripInput = {
   destination: string;
+  origin?: string;
   budget: string;
   days: string;
 };
@@ -7,6 +8,14 @@ export type TripInput = {
 export type Coordinates = {
   lat: number;
   lng: number;
+};
+
+export type UnsplashImage = {
+  url: string;
+  thumbUrl: string;
+  alt: string;
+  credit: string;
+  creditLink: string;
 };
 
 export type TripResult = {
@@ -22,6 +31,10 @@ export type TripResult = {
 
   estimatedDailyBudget: number;
 
+  budgetFeasible: boolean;
+  budgetNote: string;
+  flightEstimate: string;
+
   heroImageQuery: string;
 
   galleryQueries: string[];
@@ -29,5 +42,7 @@ export type TripResult = {
   itinerary: string[];
 
   tips: string[];
-};
 
+  heroImage?: UnsplashImage | null;
+  galleryImages?: (UnsplashImage | null)[];
+};

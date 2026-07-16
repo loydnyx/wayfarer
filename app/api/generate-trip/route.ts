@@ -4,6 +4,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 type TripInput = {
   destination: string;
+  origin?: string;
   budget: string;
   days: string;
 };
@@ -29,7 +30,14 @@ function generateMockTrip(input: TripInput) {
     bestSeason: "December to May",
 
     estimatedDailyBudget:
-      Math.round(Number(input.budget) / dayCount),
+      Math.round(Number(input.budget) / dayCount) || 0,
+
+    budgetFeasible: true,
+    budgetNote: "",
+
+    flightEstimate: input.origin
+      ? `Estimated round-trip flights from ${input.origin} to ${input.destination} range moderately depending on season and booking time.`
+      : "",
 
     heroImageQuery: `${input.destination} skyline`,
 
@@ -139,7 +147,16 @@ No explanation.
 No code block.
 
 CURRENCY RULE:
-The budget below is given in a specific currency (e.g. "PHP", "USD"). When assessing whether the budget is realistic, mentally account for real-world prices at the destination (which may use a different local currency) and its cost of living relative to the traveler's budget currency — this affects how tight or generous the budget actually is. However, in your written output (summary, itinerary, tips, estimatedDailyBudget), express ALL monetary values using ONLY the traveler's given currency and its symbol. Never write, mention, or reference any other currency code or symbol (e.g. do not write "EUR", "€", "USD", "$") anywhere in your response, even as a comparison or approximation.
+The budget below is given in a specific currency (e.g. "PHP", "USD"). When assessing whether the budget is realistic, mentally account for real-world prices at the destination (which may use a different local currency) and its cost of living relative to the traveler's budget currency — this affects how tight or generous the budget actually is. However, in your written output (summary, itinerary, tips, estimatedDailyBudget, budgetNote, flightEstimate), express ALL monetary values using ONLY the traveler's given currency and its symbol. Never write, mention, or reference any other currency code or symbol (e.g. do not write "EUR", "€", "USD", "$") anywhere in your response, even as a comparison or approximation.
+
+BUDGET FEASIBILITY CHECK:
+Realistically assess whether the given budget is sufficient to cover the destination, trip duration, and (if provided) flights from the origin — accounting for typical costs of accommodation, food, local transport, and activities at that destination.
+- If the budget is NOT realistically sufficient (too low for the destination/duration), set "budgetFeasible" to false, and in "budgetNote" briefly explain why (1-2 sentences) and suggest a more realistic minimum budget in the traveler's currency.
+- If the budget is sufficient or generous, set "budgetFeasible" to true and leave "budgetNote" as an empty string.
+- Still generate a complete, best-effort itinerary regardless of feasibility — the budgetNote is a warning shown alongside the itinerary, not a blocker.
+
+FLIGHT ESTIMATE:
+${input.origin ? `The traveler is flying from "${input.origin}". In "flightEstimate", give a brief 1-2 sentence realistic estimate of round-trip flight cost range and typical flight duration from ${input.origin} to ${input.destination}, in the traveler's currency.` : `No origin was provided. Leave "flightEstimate" as an empty string.`}
 
 {
 "title":"",
@@ -152,11 +169,17 @@ The budget below is given in a specific currency (e.g. "PHP", "USD"). When asses
 },
 "bestSeason":"",
 "estimatedDailyBudget":0,
+"budgetFeasible":true,
+"budgetNote":"",
+"flightEstimate":"",
 "heroImageQuery":"",
 "galleryQueries":["","","",""],
 "itinerary":[""],
 "tips":[""]
 }
+
+Origin:
+${input.origin || "Not specified"}
 
 Destination:
 ${input.destination}
