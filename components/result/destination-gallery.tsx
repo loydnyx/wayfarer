@@ -1,24 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ImageIcon, X, ExternalLink } from "lucide-react";
 
 type UnsplashImage = {
+  id?: string;
   url: string;
   thumbUrl: string;
   alt: string;
   credit: string;
   creditLink: string;
+  downloadLocation?: string | null;
 };
 
 type Props = {
   destination?: string;
   heroImageQuery?: string;
   galleryQueries?: string[] | null;
-  cachedHeroImage?: UnsplashImage | null; // BAGO
-  cachedGalleryImages?: (UnsplashImage | null)[]; // BAGO
+  cachedHeroImage?: UnsplashImage | null;
+  cachedGalleryImages?: (UnsplashImage | null)[];
 };
+
+// BAGO — UTM params required ng Unsplash API guidelines
+function withUtm(url: string) {
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}utm_source=wayfarer&utm_medium=referral`;
+}
 
 export default function DestinationGallery({
   destination,
@@ -44,11 +52,28 @@ export default function DestinationGallery({
     caption: string;
   } | null>(null);
 
+  // BAGO — guard laban sa duplicate tracking calls
+  const trackedIds = useRef<Set<string>>(new Set());
+
+  // BAGO — i-trigger ang Unsplash download event
+  function trackDownload(image?: UnsplashImage | null) {
+    if (!image?.downloadLocation || !image.id) return;
+    if (trackedIds.current.has(image.id)) return;
+    trackedIds.current.add(image.id);
+
+    fetch("/api/images/track-download", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ downloadLocation: image.downloadLocation }),
+    }).catch(() => {});
+  }
+
   useEffect(() => {
-    // BAGO — kung may cached data na, huwag na mag-fetch ulit
     if (cachedHeroImage !== undefined) {
-      setHeroImage(cachedHeroImage);
+      const img = cachedHeroImage ?? null;
+      setHeroImage(img);
       setHeroLoading(false);
+      trackDownload(img);
       return;
     }
 
@@ -62,17 +87,20 @@ export default function DestinationGallery({
     fetch(`/api/images?query=${encodeURIComponent(heroImageQuery)}&count=1${fallback}&offset=0`)
       .then((res) => res.json())
       .then((data) => {
-        setHeroImage(data.images?.[0] ?? null);
+        const img = data.images?.[0] ?? null;
+        setHeroImage(img);
+        trackDownload(img);
       })
       .catch(() => setHeroImage(null))
       .finally(() => setHeroLoading(false));
   }, [heroImageQuery, destination, cachedHeroImage]);
 
   useEffect(() => {
-    // BAGO — kung may cached data na, huwag na mag-fetch ulit
     if (cachedGalleryImages !== undefined) {
-      setGalleryImages(cachedGalleryImages);
+      const imgs = cachedGalleryImages ?? safeGalleryQueries.map(() => null);
+      setGalleryImages(imgs);
       setGalleryLoading(false);
+      imgs.forEach(trackDownload);
       return;
     }
 
@@ -92,7 +120,10 @@ export default function DestinationGallery({
           .catch(() => null)
       )
     )
-      .then(setGalleryImages)
+      .then((imgs) => {
+        setGalleryImages(imgs);
+        imgs.forEach(trackDownload);
+      })
       .finally(() => setGalleryLoading(false));
   }, [safeGalleryQueries, destination, cachedGalleryImages]);
 
@@ -145,15 +176,29 @@ export default function DestinationGallery({
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             <div className="absolute bottom-4 left-6 right-6">
               <h3 className="text-2xl font-bold text-white">{destination}</h3>
-              <a
-                href={heroImage.creditLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs text-slate-300 hover:underline"
-              >
-                Photo by {heroImage.credit} on Unsplash
-              </a>
+              {/* BAGO — hiwalay na links, may UTM */}
+              <p className="text-xs text-slate-300">
+                Photo by{" "}
+                <a
+                  href={withUtm(heroImage.creditLink)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:underline"
+                >
+                  {heroImage.credit}
+                </a>{" "}
+                on{" "}
+                <a
+                  href={withUtm("https://unsplash.com")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="hover:underline"
+                >
+                  Unsplash
+                </a>
+              </p>
             </div>
           </>
         ) : (
@@ -249,16 +294,30 @@ export default function DestinationGallery({
                 <p className="text-sm font-medium capitalize text-white">
                   {lightboxImage.caption}
                 </p>
-                <a
-                  href={lightboxImage.image.creditLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 text-xs text-slate-300 hover:text-white hover:underline"
-                >
-                  Photo by {lightboxImage.image.credit}
+                {/* BAGO — hiwalay na links, may UTM */}
+                <p className="flex items-center gap-1 text-xs text-slate-300">
+                  Photo by{" "}
+                  <a
+                    href={withUtm(lightboxImage.image.creditLink)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="hover:text-white hover:underline"
+                  >
+                    {lightboxImage.image.credit}
+                  </a>{" "}
+                  on{" "}
+                  <a
+                    href={withUtm("https://unsplash.com")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="hover:text-white hover:underline"
+                  >
+                    Unsplash
+                  </a>
                   <ExternalLink size={12} />
-                </a>
+                </p>
               </div>
             </motion.div>
           </motion.div>

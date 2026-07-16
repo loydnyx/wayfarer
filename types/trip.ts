@@ -11,11 +11,13 @@ export type Coordinates = {
 };
 
 export type UnsplashImage = {
+  id?: string; // BAGO
   url: string;
   thumbUrl: string;
   alt: string;
   credit: string;
   creditLink: string;
+  downloadLocation?: string | null; // BAGO
 };
 
 export type TripResult = {

@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query");
   const fallbackQuery = searchParams.get("fallback");
-  const offset = parseInt(searchParams.get("offset") || "0", 10); // BAGO
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
 
   if (!query) {
     return Response.json({ error: "Missing query parameter" }, { status: 400 });
@@ -37,19 +37,19 @@ export async function GET(req: NextRequest) {
     let results = await searchUnsplash(query, 1);
 
     if (results.length === 0 && fallbackQuery) {
-      // BAGO — kumuha ng maraming resulta (hanggang 10), tapos pumili
-      // base sa offset para hindi paulit-ulit ang parehong larawan
       const fallbackResults = await searchUnsplash(fallbackQuery, 10);
       const picked = fallbackResults[offset % fallbackResults.length];
       results = picked ? [picked] : [];
     }
 
     const images = results.map((photo: any) => ({
+      id: photo.id, // BAGO
       url: photo.urls.regular,
       thumbUrl: photo.urls.small,
       alt: photo.alt_description || query,
       credit: photo.user?.name || "Unsplash",
       creditLink: photo.user?.links?.html || "https://unsplash.com",
+      downloadLocation: photo.links?.download_location || null, // BAGO
     }));
 
     return Response.json({ images });
