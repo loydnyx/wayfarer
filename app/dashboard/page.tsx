@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { MapPin, Globe, Wallet, Sparkles } from "lucide-react";
+import { MapPin, Globe, Wallet, Sparkles, ImageIcon } from "lucide-react";
 import Link from "next/link";
 
 export default async function DashboardHome() {
@@ -22,10 +22,10 @@ export default async function DashboardHome() {
     <div className="px-4 py-4 sm:px-6 sm:py-8 lg:p-10">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white sm:text-3xl">
+          <h1 className="text-xl font-bold text-text sm:text-3xl">
             Welcome back, {firstName} 👋
           </h1>
-          <p className="mt-1 text-sm text-slate-400 sm:mt-2 sm:text-base">
+          <p className="mt-1 text-sm text-muted sm:mt-2 sm:text-base">
             Here's a quick look at your travel planning activity.
           </p>
         </div>
@@ -39,33 +39,34 @@ export default async function DashboardHome() {
         </Link>
       </div>
 
+      {/* Stat cards — dinagdagan ng colored icon badges */}
       <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-5">
-          <div className="flex items-center gap-1.5 text-slate-400 sm:gap-2">
-            <MapPin size={14} className="sm:size-4" />
-            <span className="text-xs sm:text-sm">Trips Planned</span>
+        <div className="rounded-2xl border border-border bg-surface p-3 sm:p-5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 sm:h-9 sm:w-9">
+            <MapPin size={16} className="sm:size-[18px]" />
           </div>
-          <p className="mt-1 text-2xl font-bold text-white sm:mt-2 sm:text-3xl">
+          <p className="mt-2.5 text-xs text-muted sm:mt-3 sm:text-sm">Trips Planned</p>
+          <p className="mt-0.5 text-2xl font-bold text-text sm:text-3xl">
             {totalTrips}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-5">
-          <div className="flex items-center gap-1.5 text-slate-400 sm:gap-2">
-            <Globe size={14} className="sm:size-4" />
-            <span className="text-xs sm:text-sm">Countries</span>
+        <div className="rounded-2xl border border-border bg-surface p-3 sm:p-5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10 text-green-600 dark:text-green-300 sm:h-9 sm:w-9">
+            <Globe size={16} className="sm:size-[18px]" />
           </div>
-          <p className="mt-1 text-2xl font-bold text-white sm:mt-2 sm:text-3xl">
+          <p className="mt-2.5 text-xs text-muted sm:mt-3 sm:text-sm">Countries</p>
+          <p className="mt-0.5 text-2xl font-bold text-text sm:text-3xl">
             {uniqueCountries}
           </p>
         </div>
 
-        <div className="col-span-2 rounded-2xl border border-white/10 bg-white/5 p-3 sm:col-span-1 sm:p-5">
-          <div className="flex items-center gap-1.5 text-slate-400 sm:gap-2">
-            <Wallet size={14} className="sm:size-4" />
-            <span className="text-xs sm:text-sm">Status</span>
+        <div className="col-span-2 rounded-2xl border border-border bg-surface p-3 sm:col-span-1 sm:p-5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-300 sm:h-9 sm:w-9">
+            <Wallet size={16} className="sm:size-[18px]" />
           </div>
-          <p className="mt-1 text-2xl font-bold text-white sm:mt-2 sm:text-3xl">
+          <p className="mt-2.5 text-xs text-muted sm:mt-3 sm:text-sm">Status</p>
+          <p className="mt-0.5 text-2xl font-bold text-text sm:text-3xl">
             Free Plan
           </p>
         </div>
@@ -73,42 +74,60 @@ export default async function DashboardHome() {
 
       <div className="mt-6 sm:mt-10">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-white sm:text-xl">
+          <h2 className="text-base font-semibold text-text sm:text-xl">
             Recent Trips
           </h2>
           {totalTrips > 0 && (
-            <Link href="/dashboard/trips" className="text-xs text-cyan-400 hover:underline sm:text-sm">
+            <Link href="/dashboard/trips" className="text-xs text-cyan-600 hover:underline dark:text-cyan-400 sm:text-sm">
               View all
             </Link>
           )}
         </div>
 
         {recentTrips.length === 0 ? (
-          <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-6 text-center sm:mt-6 sm:p-8">
-            <p className="text-sm text-slate-400 sm:text-base">
+          <div className="mt-4 rounded-2xl border border-border bg-surface p-6 text-center sm:mt-6 sm:p-8">
+            <p className="text-sm text-muted sm:text-base">
               You haven't planned any trips yet.
             </p>
-            <Link href="/dashboard/plan" className="mt-2 inline-block text-sm text-cyan-400 hover:underline">
+            <Link href="/dashboard/plan" className="mt-2 inline-block text-sm text-cyan-600 hover:underline dark:text-cyan-400">
               Plan your first trip
             </Link>
           </div>
         ) : (
-          <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-4 lg:grid-cols-3">
             {recentTrips.map((trip) => (
               <Link
                 key={trip.id}
                 href="/dashboard/trips"
-                className="rounded-2xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-cyan-500/30 sm:p-5"
+                className="overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-cyan-500/30 sm:rounded-2xl"
               >
-                <span className="inline-block rounded-full bg-cyan-500/10 px-2.5 py-1 text-xs font-medium text-cyan-300">
-                  {trip.status}
-                </span>
-                <h3 className="mt-2 text-sm font-semibold text-white sm:text-base">
-                  {trip.title}
-                </h3>
-                <p className="mt-1 text-xs text-slate-400 sm:text-sm">
-                  {trip.destination} • {trip.days} Days
-                </p>
+                {/* Thumbnail — gamit ang naka-cache na hero image */}
+                <div className="relative h-20 w-full overflow-hidden bg-gradient-to-br from-cyan-500/10 via-slate-900 to-black sm:h-28">
+                  {trip.hero_image?.thumbUrl ? (
+                    <img
+                      src={trip.hero_image.thumbUrl}
+                      alt={trip.hero_image.alt || trip.destination}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <ImageIcon className="text-cyan-400/40" size={20} />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                </div>
+
+                <div className="p-3 sm:p-5">
+                  <span className="inline-block rounded-full bg-cyan-500/10 px-2 py-0.5 text-[10px] font-medium text-cyan-600 dark:text-cyan-300 sm:px-2.5 sm:py-1 sm:text-xs">
+                    {trip.status}
+                  </span>
+                  <h3 className="mt-1.5 truncate text-sm font-semibold text-text sm:mt-2 sm:text-base">
+                    {trip.title}
+                  </h3>
+                  <p className="mt-1 truncate text-xs text-muted sm:text-sm">
+                    {trip.destination} • {trip.days} Days
+                  </p>
+                </div>
               </Link>
             ))}
           </div>
