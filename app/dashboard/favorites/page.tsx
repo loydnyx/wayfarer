@@ -6,13 +6,44 @@ import {
   getFavorites,
   addFavorite,
   removeFavorite,
-  type FavoriteDestination,
 } from "@/lib/trips/favorites";
 import { POPULAR_DESTINATIONS } from "@/lib/destinations";
-import FavoriteCard from "@/components/dashboard/favorite-card";
+import FavoritesCarousel, {
+  type FavoriteWithImage,
+} from "@/components/dashboard/favorites-carousel";
+
+type UnsplashImage = {
+  id?: string;
+  url: string;
+  thumbUrl: string;
+  alt: string;
+  credit: string;
+  creditLink: string;
+  downloadLocation?: string | null;
+};
+
+function getBroadFallback(destination: string): string {
+  const parts = destination.split(",").map((p) => p.trim());
+  return parts[parts.length - 1] || destination;
+}
+
+async function fetchImageFor(destination: string): Promise<UnsplashImage | null> {
+  const fallback = getBroadFallback(destination);
+  try {
+    const res = await fetch(
+      `/api/images?query=${encodeURIComponent(
+        destination
+      )}&count=1&fallback=${encodeURIComponent(fallback)}`
+    );
+    const data = await res.json();
+    return data.images?.[0] ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export default function FavoritesPage() {
-  const [favorites, setFavorites] = useState<FavoriteDestination[]>([]);
+  const [favorites, setFavorites] = useState<FavoriteWithImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [newDestination, setNewDestination] = useState("");
   const [adding, setAdding] = useState(false);
@@ -21,9 +52,28 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     getFavorites()
-      .then(setFavorites)
-      .catch((err) => console.error("Failed to load favorites:", err))
-      .finally(() => setLoading(false));
+      .then(async (data) => {
+        const withPlaceholders: FavoriteWithImage[] = data.map((f) => ({
+          ...f,
+          image: null,
+          imageLoading: true,
+        }));
+        setFavorites(withPlaceholders);
+        setLoading(false);
+
+        data.forEach(async (fav) => {
+          const image = await fetchImageFor(fav.destination_name);
+          setFavorites((prev) =>
+            prev.map((f) =>
+              f.id === fav.id ? { ...f, image, imageLoading: false } : f
+            )
+          );
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to load favorites:", err);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -41,7 +91,9 @@ export default function FavoritesPage() {
       ? POPULAR_DESTINATIONS.filter(
           (d) =>
             d.toLowerCase().includes(newDestination.toLowerCase()) &&
-            !favorites.some((f) => f.destination_name.toLowerCase() === d.toLowerCase())
+            !favorites.some(
+              (f) => f.destination_name.toLowerCase() === d.toLowerCase()
+            )
         ).slice(0, 6)
       : [];
 
@@ -53,8 +105,18 @@ export default function FavoritesPage() {
     setShowSuggestions(false);
     try {
       const favorite = await addFavorite(destination);
-      setFavorites((prev) => [favorite, ...prev]);
+      setFavorites((prev) => [
+        { ...favorite, image: null, imageLoading: true },
+        ...prev,
+      ]);
       setNewDestination("");
+
+      const image = await fetchImageFor(favorite.destination_name);
+      setFavorites((prev) =>
+        prev.map((f) =>
+          f.id === favorite.id ? { ...f, image, imageLoading: false } : f
+        )
+      );
     } catch (err) {
       console.error("Failed to add favorite:", err);
     } finally {
@@ -63,7 +125,7 @@ export default function FavoritesPage() {
   };
 
   const handleRemove = async (id: string) => {
-    setFavorites((prev) => prev.filter((f) => f.id !== id)); // optimistic
+    setFavorites((prev) => prev.filter((f) => f.id !== id));
     try {
       await removeFavorite(id);
     } catch (err) {
@@ -94,7 +156,7 @@ export default function FavoritesPage() {
           />
 
           {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="custom-scrollbar absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-xl border border-border bg-surface shadow-xl">
+            <div className="custom-scrollbar absolute z-30 mt-1 max-h-52 w-full overflow-y-auto rounded-xl border border-border bg-slate-900 shadow-2xl">
               {filteredSuggestions.map((place) => (
                 <button
                   key={place}
@@ -120,11 +182,7 @@ export default function FavoritesPage() {
       </div>
 
       {loading ? (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-44 animate-pulse rounded-2xl border border-border bg-surface sm:h-52" />
-          ))}
-        </div>
+        <div className="mt-6 h-64 animate-pulse rounded-3xl border border-border bg-surface sm:mt-8 sm:h-80" />
       ) : favorites.length === 0 ? (
         <div className="mt-16 flex flex-col items-center gap-3 text-center">
           <Heart size={40} className="text-slate-500 dark:text-slate-600" />
@@ -132,10 +190,8 @@ export default function FavoritesPage() {
           <p className="text-sm text-slate-500">Add places you'd love to visit someday.</p>
         </div>
       ) : (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-3">
-          {favorites.map((fav) => (
-            <FavoriteCard key={fav.id} favorite={fav} onRemove={handleRemove} />
-          ))}
+        <div className="mt-6 sm:mt-8">
+          <FavoritesCarousel items={favorites} onRemove={handleRemove} />
         </div>
       )}
     </div>

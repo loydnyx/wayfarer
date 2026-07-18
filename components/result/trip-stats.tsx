@@ -1,17 +1,15 @@
 "use client";
 
-import {
-  Wallet,
-  Calendar,
-  Globe,
-  AlertTriangle,
-  Plane,
-} from "lucide-react";
+import { Wallet, Calendar, Globe, Sun } from "lucide-react";
+import FlightInfo from "./flight-info";
 
 type Props = {
   budget: string;
   days: string;
   country: string;
+  destination: string;
+  origin?: string;
+  bestSeason?: string;
   budgetFeasible?: boolean;
   budgetNote?: string;
   flightEstimate?: string;
@@ -21,8 +19,9 @@ export default function TripStats({
   budget,
   days,
   country,
-  budgetFeasible = true,
-  budgetNote = "",
+  destination,
+  origin,
+  bestSeason = "",
   flightEstimate = "",
 }: Props) {
   return (
@@ -33,27 +32,17 @@ export default function TripStats({
         <Stat icon={<Globe size={18} />} title="Country" value={country} />
       </div>
 
-      {!budgetFeasible && budgetNote && (
-        <div className="flex gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
-          <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-400" />
+      {bestSeason && (
+        <div className="flex gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+          <Sun size={18} className="mt-0.5 shrink-0 text-amber-300" />
           <div>
-            <p className="text-sm font-medium text-amber-300">
-              Your budget may be tight for this trip
-            </p>
-            <p className="mt-1 text-sm text-slate-400">{budgetNote}</p>
+            <p className="text-sm font-medium text-amber-300">Best Season to Visit</p>
+            <p className="mt-1 text-sm text-slate-400">{bestSeason}</p>
           </div>
         </div>
       )}
 
-      {flightEstimate && (
-        <div className="flex gap-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4">
-          <Plane size={18} className="mt-0.5 shrink-0 text-cyan-400" />
-          <div>
-            <p className="text-sm font-medium text-cyan-300">Flight Estimate</p>
-            <p className="mt-1 text-sm text-slate-400">{flightEstimate}</p>
-          </div>
-        </div>
-      )}
+      <FlightInfo origin={origin} destination={destination} flightEstimate={flightEstimate} />
     </section>
   );
 }

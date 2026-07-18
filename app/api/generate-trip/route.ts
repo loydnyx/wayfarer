@@ -34,6 +34,7 @@ function generateMockTrip(input: TripInput) {
 
     budgetFeasible: true,
     budgetNote: "",
+    recommendedBudget: "",
 
     flightEstimate: input.origin
       ? `Estimated round-trip flights from ${input.origin} to ${input.destination} range moderately depending on season and booking time.`
@@ -49,16 +50,16 @@ function generateMockTrip(input: TripInput) {
     ],
 
     itinerary: Array.from({ length: dayCount }, (_, i) => ({
-      day: `Day ${i + 1}: Explore ${input.destination} with curated experiences, local food, hidden gems and attractions.`,
-      userCost: "N/A",
-      localCost: "N/A",
+      day: `Day ${i + 1}: Visit a local landmark (entrance ~₱200), enjoy lunch at a nearby eatery (~₱250), and explore a market or nearby attraction in the afternoon (~₱150).`,
+      userCost: "₱600",
+      localCost: "₱600",
     })),
 
     tips: [
-      "Travel early to avoid crowds.",
-      "Bring enough cash for local markets.",
-      "Use public transportation whenever possible.",
-      "Always stay hydrated.",
+      "Travel early to avoid crowds, especially at popular landmarks.",
+      "Bring enough cash for local markets, as many small vendors don't accept cards.",
+      "Use public transportation whenever possible to save on costs.",
+      "Always stay hydrated, especially if walking between attractions.",
     ],
   };
 }
@@ -139,16 +140,27 @@ No code block.
 CURRENCY RULE:
 The budget below is given in a specific currency (e.g. "PHP", "USD") — this is the traveler's currency. When assessing whether the budget is realistic, account for real-world prices at the destination in its own local currency, and its cost of living relative to the traveler's budget currency.
 
-For "summary", "budgetNote", "flightEstimate", "estimatedDailyBudget": express amounts ONLY in the traveler's currency and its symbol. Never mention any other currency there.
+For "summary", "budgetNote", "recommendedBudget", "flightEstimate", "estimatedDailyBudget": express amounts ONLY in the traveler's currency and its symbol. Never mention any other currency there.
 
-For EACH itinerary day, provide TWO cost fields:
-- "userCost": the estimated cost for that day's activities, expressed in the TRAVELER'S currency and symbol (e.g. "₱2,500").
-- "localCost": the SAME estimated cost converted and expressed in the DESTINATION'S own local currency and symbol (e.g. "¥5,800" for Japan). If the traveler's currency IS the local currency of the destination, set "localCost" to the same value as "userCost".
+ITINERARY DETAIL REQUIREMENTS:
+Each "day" entry must be a detailed, concrete plan — not generic filler. For each day:
+- Name SPECIFIC real places (landmarks, restaurants, neighborhoods, markets, activities) appropriate to the destination — never write vague phrases like "explore attractions" or "enjoy local food" without naming what/where.
+- For EACH distinct activity or meal mentioned within that day's text, include its approximate individual cost inline, in the traveler's currency (e.g. "Visit Fushimi Inari Shrine (free entry), lunch at a local ramen shop (~₱350), then explore Nishiki Market (~₱200 for snacks)").
+- Structure each day as a short flowing paragraph covering morning, afternoon, and evening where relevant.
+- The "userCost" field for that day must equal the SUM of all individual costs mentioned in that day's text (the day's total).
+- "localCost" is the same day total converted to the destination's own local currency and symbol. If the traveler's currency IS the local currency, set "localCost" equal to "userCost".
+
+TIPS REQUIREMENTS:
+Provide 4-6 practical, specific tips relevant to this exact destination and trip — covering things like local transport options, cultural etiquette, money-saving advice, safety notes, or seasonal considerations. Avoid generic advice that could apply to any destination (e.g. do not just say "stay hydrated" or "bring cash" without specifics relevant to this destination).
 
 BUDGET FEASIBILITY CHECK:
 Realistically assess whether the given budget is sufficient to cover the destination, trip duration, and (if provided) flights from the origin — accounting for typical costs of accommodation, food, local transport, and activities at that destination.
-- If the budget is NOT realistically sufficient, set "budgetFeasible" to false, and in "budgetNote" briefly explain why (1-2 sentences) and suggest a more realistic minimum budget in the traveler's currency.
-- If the budget is sufficient or generous, set "budgetFeasible" to true and leave "budgetNote" as an empty string.
+- If the budget is NOT realistically sufficient, set "budgetFeasible" to false. In "budgetNote", briefly explain why in 1-2 sentences (do not repeat the number here). In "recommendedBudget", give ONLY a realistic minimum total budget for the full trip duration.
+
+  CRITICAL: "recommendedBudget" MUST use the exact same currency as the traveler's original budget (the one given below). Do NOT convert it to the destination's local currency or any other currency. For example, if the traveler's budget is in USD, "recommendedBudget" must also be in USD (e.g. "$650"). Double-check this before responding — this is a common mistake, do not make it.
+
+  This field is required whenever budgetFeasible is false — never leave it empty in that case, and it must always be a larger number than the traveler's original budget.
+- If the budget is sufficient or generous, set "budgetFeasible" to true, and leave "budgetNote" and "recommendedBudget" as empty strings.
 - Still generate a complete, best-effort itinerary regardless of feasibility.
 
 FLIGHT ESTIMATE:
@@ -167,6 +179,7 @@ ${input.origin ? `The traveler is flying from "${input.origin}". In "flightEstim
 "estimatedDailyBudget":0,
 "budgetFeasible":true,
 "budgetNote":"",
+"recommendedBudget":"",
 "flightEstimate":"",
 "heroImageQuery":"",
 "galleryQueries":["","","",""],

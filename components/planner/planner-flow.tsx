@@ -43,6 +43,7 @@ export default function PlannerFlow() {
 
       sessionStorage.setItem("atlas_trip_result", JSON.stringify(parsed));
       sessionStorage.setItem("atlas_trip_input", JSON.stringify(data));
+      sessionStorage.setItem("atlas_trip_saved", "false");
 
       router.push("/trip");
     } catch (err) {

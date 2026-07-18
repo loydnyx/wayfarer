@@ -41,6 +41,7 @@ export type TripResult = {
 
   budgetFeasible: boolean;
   budgetNote: string;
+  recommendedBudget?: string;
   flightEstimate: string;
 
   heroImageQuery: string;

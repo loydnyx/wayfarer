@@ -1,6 +1,18 @@
 import jsPDF from "jspdf";
 import type { TripResult, TripInput } from "@/types/trip";
 
+// BAGO — tanggapin din ang lumang string-only format ng itinerary
+function normalizeItinerary(
+  itinerary: TripResult["itinerary"]
+): { day: string; userCost: string; localCost: string }[] {
+  return itinerary.map((item) => {
+    if (typeof item === "string") {
+      return { day: item, userCost: "", localCost: "" };
+    }
+    return item;
+  });
+}
+
 export function exportTripToPDF(trip: TripResult, input: TripInput) {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -75,7 +87,9 @@ export function exportTripToPDF(trip: TripResult, input: TripInput) {
   doc.text("Itinerary", margin, y);
   addSpace(20);
 
-  trip.itinerary.forEach((dayItem, i) => {
+  const normalizedItinerary = normalizeItinerary(trip.itinerary); // BAGO
+
+  normalizedItinerary.forEach((dayItem, i) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10.5);
     doc.setTextColor(20, 20, 20);

@@ -5,8 +5,17 @@ import { useRouter } from "next/navigation";
 import ResultCard from "@/components/planner/result-card";
 import { Button } from "@/components/ui/button";
 import type { TripInput, TripResult } from "@/types/trip";
+import { CURRENCIES } from "@/lib/currencies";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronDown } from "lucide-react";
+
+function parseBudget(budget: string) {
+  const match = budget.match(/(\d+)/);
+  const amount = match ? match[1] : "";
+  const codeMatch = budget.match(/\b([A-Z]{3})\b/);
+  const code = codeMatch ? codeMatch[1] : "PHP";
+  return { amount, code };
+}
 
 export default function TripPage() {
   const router = useRouter();
@@ -14,6 +23,14 @@ export default function TripPage() {
   const [trip, setTrip] = useState<TripResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSavedTrip, setIsSavedTrip] = useState(false);
+
+  const [adjustingBudget, setAdjustingBudget] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const [regenerateError, setRegenerateError] = useState("");
+  const [budgetAmount, setBudgetAmount] = useState("");
+  const [budgetCurrency, setBudgetCurrency] = useState("PHP");
+  const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
+  const [regenerateCount, setRegenerateCount] = useState(0);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const userScrolledUpRef = useRef(false);
@@ -28,12 +45,20 @@ export default function TripPage() {
     const savedFlag = sessionStorage.getItem("atlas_trip_saved");
 
     if (storedTrip && storedInput) {
+      const parsedInput: TripInput = JSON.parse(storedInput);
       setTrip(JSON.parse(storedTrip));
-      setFormInput(JSON.parse(storedInput));
+      setFormInput(parsedInput);
       setIsSavedTrip(savedFlag === "true");
+
+      const { amount, code } = parseBudget(parsedInput.budget);
+      setBudgetAmount(amount);
+      setBudgetCurrency(code);
     }
 
-    sessionStorage.removeItem("atlas_trip_saved");
+    // FIX: hindi na natin tinatanggal ang flag dito — kailangan itong
+    // manatili para tama pa rin ang isSavedTrip kahit i-refresh ang tab.
+    // Ang planner-flow.tsx na ang bahalang i-clear/i-reset ito
+    // bago mag-navigate papunta dito galing sa FRESH generation.
 
     setLoading(false);
   }, []);
@@ -50,7 +75,7 @@ export default function TripPage() {
   }, []);
 
   useEffect(() => {
-    if (!contentRef.current) return;
+    if (!contentRef.current || adjustingBudget) return;
 
     const observer = new ResizeObserver(() => {
       if (!userScrolledUpRef.current) {
@@ -64,11 +89,50 @@ export default function TripPage() {
     observer.observe(contentRef.current);
 
     return () => observer.disconnect();
-  }, [trip]);
+  }, [trip, adjustingBudget]);
 
-  // FIXED — tamang routes na
   const backHref = isSavedTrip ? "/dashboard/trips" : "/";
   const backLabel = isSavedTrip ? "Back to Dashboard" : "Back to Planner";
+
+  const handleRegenerate = async () => {
+    if (!formInput || !budgetAmount.trim()) return;
+
+    const currency = CURRENCIES.find((c) => c.code === budgetCurrency);
+    const newBudget = `${currency?.symbol ?? ""}${budgetAmount.trim()} ${budgetCurrency}`;
+    const newInput: TripInput = { ...formInput, budget: newBudget };
+
+    setRegenerating(true);
+    setRegenerateError("");
+
+    try {
+      const res = await fetch("/api/generate-trip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newInput),
+      });
+
+      const text = await res.text();
+      if (!text) throw new Error("Empty response from server");
+
+      const parsed: TripResult = JSON.parse(text);
+
+      setTrip(parsed);
+      setFormInput(newInput);
+      setAdjustingBudget(false);
+      setRegenerateCount((prev) => prev + 1);
+
+      sessionStorage.setItem("atlas_trip_result", JSON.stringify(parsed));
+      sessionStorage.setItem("atlas_trip_input", JSON.stringify(newInput));
+      // FIX: regenerate = hindi ito "saved" trip kahit galing sa dating saved view
+      sessionStorage.setItem("atlas_trip_saved", "false");
+      setIsSavedTrip(false);
+    } catch (err) {
+      console.error(err);
+      setRegenerateError("Something went wrong. Please try again.");
+    } finally {
+      setRegenerating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -109,6 +173,7 @@ export default function TripPage() {
   }
 
   const appBarTitle = `${formInput.destination} — ${formInput.days} Days`;
+  const selectedCurrency = CURRENCIES.find((c) => c.code === budgetCurrency);
 
   return (
     <>
@@ -141,28 +206,106 @@ export default function TripPage() {
             {backLabel}
           </button>
 
-          <ResultCard
-            destination={formInput.destination}
-            budget={formInput.budget}
-            days={formInput.days}
-            title={trip.title}
-            summary={trip.summary}
-            itinerary={trip.itinerary}
-            tips={trip.tips}
-            country={trip.country}
-            city={trip.city}
-            coordinates={trip.coordinates}
-            bestSeason={trip.bestSeason}
-            estimatedDailyBudget={trip.estimatedDailyBudget}
-            heroImageQuery={trip.heroImageQuery}
-            galleryQueries={trip.galleryQueries}
-            heroImage={trip.heroImage}
-            galleryImages={trip.galleryImages}
-            isSavedTrip={isSavedTrip}
-            budgetFeasible={trip.budgetFeasible}
-            budgetNote={trip.budgetNote}
-            flightEstimate={trip.flightEstimate}
-          />
+          {adjustingBudget ? (
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8">
+              <h2 className="text-xl font-bold text-white">Adjust Your Budget</h2>
+              <p className="mt-2 text-sm text-slate-400">
+                {formInput.destination} — {formInput.days} Days
+              </p>
+
+              <div className="mt-6">
+                <label className="mb-1.5 block text-xs text-slate-400">Budget</label>
+                <div className="flex gap-1.5">
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setCurrencyDropdownOpen((prev) => !prev)}
+                      className="flex h-full items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-xs text-white transition-colors hover:border-cyan-500/30"
+                    >
+                      {selectedCurrency?.symbol} {budgetCurrency}
+                      <ChevronDown size={12} />
+                    </button>
+
+                    {currencyDropdownOpen && (
+                      <div className="custom-scrollbar absolute left-0 z-20 mt-1 max-h-48 w-36 overflow-y-auto rounded-lg border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl">
+                        {CURRENCIES.map((c) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            onClick={() => {
+                              setBudgetCurrency(c.code);
+                              setCurrencyDropdownOpen(false);
+                            }}
+                            className={`block w-full px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-cyan-500/10 hover:text-cyan-300 ${
+                              c.code === budgetCurrency ? "text-cyan-300" : "text-slate-300"
+                            }`}
+                          >
+                            {c.symbol} {c.code}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    inputMode="numeric"
+                    value={budgetAmount}
+                    onChange={(e) => setBudgetAmount(e.target.value.replace(/[^\d]/g, ""))}
+                    placeholder="1500"
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
+                  />
+                </div>
+              </div>
+
+              {regenerateError && (
+                <p className="mt-3 text-xs text-red-400">{regenerateError}</p>
+              )}
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <button
+                  onClick={handleRegenerate}
+                  disabled={regenerating || !budgetAmount.trim()}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-cyan-500 px-6 py-3 text-sm font-semibold text-black transition-all hover:bg-cyan-400 disabled:opacity-50"
+                >
+                  {regenerating ? "Regenerating..." : "Regenerate Trip"}
+                </button>
+                <button
+                  onClick={() => setAdjustingBudget(false)}
+                  disabled={regenerating}
+                  className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm text-slate-300 transition-colors hover:bg-white/10 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ResultCard
+              key={regenerateCount}
+              destination={formInput.destination}
+              origin={formInput.origin}
+              budget={formInput.budget}
+              days={formInput.days}
+              title={trip.title}
+              summary={trip.summary}
+              itinerary={trip.itinerary}
+              tips={trip.tips}
+              country={trip.country}
+              city={trip.city}
+              coordinates={trip.coordinates}
+              bestSeason={trip.bestSeason}
+              estimatedDailyBudget={trip.estimatedDailyBudget}
+              heroImageQuery={trip.heroImageQuery}
+              galleryQueries={trip.galleryQueries}
+              heroImage={trip.heroImage}
+              galleryImages={trip.galleryImages}
+              isSavedTrip={isSavedTrip}
+              budgetFeasible={trip.budgetFeasible}
+              budgetNote={trip.budgetNote}
+              recommendedBudget={trip.recommendedBudget}
+              flightEstimate={trip.flightEstimate}
+              onAdjustBudget={() => setAdjustingBudget(true)}
+            />
+          )}
         </div>
       </main>
     </>

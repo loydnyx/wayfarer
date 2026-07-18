@@ -8,11 +8,19 @@ import MarkdownText from "./markdown-text";
 import type { ItineraryDay } from "@/types/trip";
 
 type Props = {
-  itinerary: ItineraryDay[];
+  itinerary: (ItineraryDay | string)[]; // BAGO — tanggapin din ang lumang string format
   isActive: boolean;
   isDone: boolean;
   onComplete: () => void;
 };
+
+// BAGO — i-convert ang lumang string items papuntang bagong shape
+function normalizeItem(item: ItineraryDay | string): ItineraryDay {
+  if (typeof item === "string") {
+    return { day: item, userCost: "", localCost: "" };
+  }
+  return item;
+}
 
 export default function ItineraryTimeline({
   itinerary,
@@ -28,22 +36,24 @@ export default function ItineraryTimeline({
 
   if (!isActive && !isDone) return null;
 
+  const normalizedItinerary = itinerary.map(normalizeItem); // BAGO
+
   const handleItemComplete = () => {
-    if (activeIndex >= itinerary.length - 1) {
+    if (activeIndex >= normalizedItinerary.length - 1) {
       onComplete();
     } else {
       setActiveIndex((prev) => prev + 1);
     }
   };
 
-  const visibleCount = isDone ? itinerary.length : activeIndex + 1;
+  const visibleCount = isDone ? normalizedItinerary.length : activeIndex + 1;
 
   return (
     <section className="space-y-5">
       <h2 className="text-xl font-semibold">Itinerary</h2>
 
       <AnimatePresence initial={false}>
-        {itinerary.slice(0, visibleCount).map((item, index) => {
+        {normalizedItinerary.slice(0, visibleCount).map((item, index) => {
           const itemDone = isDone || index < activeIndex;
           const itemActive = isActive && index === activeIndex;
 
