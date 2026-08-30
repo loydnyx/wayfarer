@@ -8,7 +8,7 @@ import {
   removeFavorite,
 } from "@/lib/trips/favorites";
 import { POPULAR_DESTINATIONS } from "@/lib/destinations";
-import { getOrFetchDestinationImage } from "@/lib/trips/image-cache.ts"; // BAGO
+import { getOrFetchDestinationImage } from "@/lib/trips/image-cache"; // BAGO
 import FavoritesCarousel, {
   type FavoriteWithImage,
 } from "@/components/dashboard/favorites-carousel";
