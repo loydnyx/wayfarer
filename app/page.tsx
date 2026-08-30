@@ -7,7 +7,6 @@ import Hero from "@/components/hero/hero";
 import Features from "@/components/home/features";
 import WhyWayfarer from "@/components/home/why-wayfarer";
 import HowItWorks from "@/components/home/how-it-works";
-import Pricing from "@/components/home/pricing";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -27,7 +26,6 @@ export default async function Home() {
       <Features />
       <WhyWayfarer />
       <HowItWorks />
-      <Pricing />
       <Footer />
     </main>
   );

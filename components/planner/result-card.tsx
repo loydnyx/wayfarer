@@ -34,14 +34,6 @@ export default function ResultCard(props: Props) {
     <div className="space-y-10">
       <ResultHero title={props.title} destination={props.destination} />
 
-      <DestinationGallery
-        destination={props.destination}
-        heroImageQuery={props.heroImageQuery}
-        galleryQueries={props.galleryQueries}
-        cachedHeroImage={props.heroImage}
-        cachedGalleryImages={props.galleryImages}
-      />
-
       <AIIntro
         summary={props.summary}
         isActive={!isSavedTrip && step === 0}
@@ -73,7 +65,6 @@ export default function ResultCard(props: Props) {
         <BudgetBlocker
           budgetNote={props.budgetNote}
           recommendedBudget={props.recommendedBudget}
-          expectedCurrency={props.budget.match(/\b([A-Z]{3})\b/)?.[1]}
           onAdjustBudget={() => props.onAdjustBudget?.()}
           onGenerateAnyway={() => setProceedAnyway(true)}
         />
@@ -81,6 +72,14 @@ export default function ResultCard(props: Props) {
 
       {!shouldBlock && (
         <>
+          <DestinationGallery
+            destination={props.destination}
+            heroImageQuery={props.heroImageQuery}
+            galleryQueries={props.galleryQueries}
+            cachedHeroImage={props.heroImage}
+            cachedGalleryImages={props.galleryImages}
+          />
+
           <ItineraryTimeline
             itinerary={props.itinerary}
             isActive={!isSavedTrip && step === 1}

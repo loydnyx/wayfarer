@@ -8,39 +8,10 @@ import {
   removeFavorite,
 } from "@/lib/trips/favorites";
 import { POPULAR_DESTINATIONS } from "@/lib/destinations";
+import { getOrFetchDestinationImage } from "@/lib/trips/image-cache.ts"; // BAGO
 import FavoritesCarousel, {
   type FavoriteWithImage,
 } from "@/components/dashboard/favorites-carousel";
-
-type UnsplashImage = {
-  id?: string;
-  url: string;
-  thumbUrl: string;
-  alt: string;
-  credit: string;
-  creditLink: string;
-  downloadLocation?: string | null;
-};
-
-function getBroadFallback(destination: string): string {
-  const parts = destination.split(",").map((p) => p.trim());
-  return parts[parts.length - 1] || destination;
-}
-
-async function fetchImageFor(destination: string): Promise<UnsplashImage | null> {
-  const fallback = getBroadFallback(destination);
-  try {
-    const res = await fetch(
-      `/api/images?query=${encodeURIComponent(
-        destination
-      )}&count=1&fallback=${encodeURIComponent(fallback)}`
-    );
-    const data = await res.json();
-    return data.images?.[0] ?? null;
-  } catch {
-    return null;
-  }
-}
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<FavoriteWithImage[]>([]);
@@ -62,7 +33,7 @@ export default function FavoritesPage() {
         setLoading(false);
 
         data.forEach(async (fav) => {
-          const image = await fetchImageFor(fav.destination_name);
+          const image = await getOrFetchDestinationImage(fav.destination_name); // BAGO
           setFavorites((prev) =>
             prev.map((f) =>
               f.id === fav.id ? { ...f, image, imageLoading: false } : f
@@ -111,7 +82,7 @@ export default function FavoritesPage() {
       ]);
       setNewDestination("");
 
-      const image = await fetchImageFor(favorite.destination_name);
+      const image = await getOrFetchDestinationImage(favorite.destination_name); // BAGO
       setFavorites((prev) =>
         prev.map((f) =>
           f.id === favorite.id ? { ...f, image, imageLoading: false } : f
@@ -125,6 +96,8 @@ export default function FavoritesPage() {
   };
 
   const handleRemove = async (id: string) => {
+    // Tanggalin lang sa favorites — HINDI natin ginagalaw ang cached image,
+    // mananatili ito para sa susunod na gamit.
     setFavorites((prev) => prev.filter((f) => f.id !== id));
     try {
       await removeFavorite(id);

@@ -16,7 +16,7 @@ export default function Hero() {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   return (
-    <section className="relative overflow-x-clip py-16 lg:py-20">
+    <section className="relative overflow-x-clip pb-16 pt-24 sm:pt-28 lg:py-20">
       <Container>
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
           {/* LEFT */}
@@ -40,9 +40,6 @@ export default function Hero() {
             </p>
 
             <div className="mt-6 flex flex-wrap gap-4 sm:mt-10">
-              <AnimatedButton size="lg" onClick={() => setSheetOpen(true)} className="lg:hidden">
-                Start Planning
-              </AnimatedButton>
               <AnimatedButton size="lg" className="hidden lg:inline-flex">
                 Start Planning
               </AnimatedButton>

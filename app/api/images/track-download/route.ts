@@ -1,8 +1,24 @@
 import { NextRequest } from "next/server";
+import { checkNamedRateLimit } from "@/lib/rate-limit";
 
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 
 export async function POST(req: NextRequest) {
+  // BAGO — rate limit check, IP-based
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+
+  const { allowed } = checkNamedRateLimit("images-download", ip, {
+    windowMs: 60 * 1000,
+    max: 40,
+  });
+
+  if (!allowed) {
+    return Response.json({ ok: false }, { status: 429 });
+  }
+
   const { downloadLocation } = await req.json();
 
   if (!downloadLocation) {

@@ -6,12 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "@/hooks/use-user";
 import { signInWithGoogle } from "@/lib/auth/sign-in";
 import { signOut } from "@/lib/auth/sign-out";
-import { link } from "fs/promises";
 
 const navLinks = [
   { label: "Features", href: "#features" },
   { label: "How it Works", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Why Wayfarer", href: "#why-wayfarer" },
 ];
 
 export default function Navbar() {

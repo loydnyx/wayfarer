@@ -1,25 +1,8 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import type { TripResult, TripInput, UnsplashImage } from "@/types/trip";
-
-async function fetchImage(
-  query: string,
-  fallback: string,
-  offset: number
-): Promise<UnsplashImage | null> {
-  try {
-    const res = await fetch(
-      `/api/images?query=${encodeURIComponent(query)}&count=1&fallback=${encodeURIComponent(
-        fallback
-      )}&offset=${offset}`
-    );
-    const data = await res.json();
-    return data.images?.[0] ?? null;
-  } catch {
-    return null;
-  }
-}
+import type { TripResult, TripInput } from "@/types/trip";
+import { getOrFetchImage } from "@/lib/trips/image-cache"; // BAGO
 
 export async function saveTrip(trip: TripResult, input: TripInput) {
   const supabase = createClient();
@@ -31,13 +14,15 @@ export async function saveTrip(trip: TripResult, input: TripInput) {
     throw new Error("You must be signed in to save a trip.");
   }
 
-  // BAGO — kunin ang aktwal na image data isang beses, dito lang sa oras ng Save
+  // BAGO — dumadaan na sa shared cache imbes na direktang tumawag sa /api/images
+  const fallback = input.destination;
+
   const [heroImage, ...galleryImages] = await Promise.all([
     trip.heroImageQuery
-      ? fetchImage(trip.heroImageQuery, input.destination, 0)
+      ? getOrFetchImage(trip.heroImageQuery, fallback, 0)
       : Promise.resolve(null),
     ...(trip.galleryQueries || []).map((q, i) =>
-      fetchImage(q, input.destination, i + 1)
+      getOrFetchImage(q, fallback, i + 1)
     ),
   ]);
 
@@ -60,8 +45,8 @@ export async function saveTrip(trip: TripResult, input: TripInput) {
       estimated_daily_budget: trip.estimatedDailyBudget,
       hero_image_query: trip.heroImageQuery,
       gallery_queries: trip.galleryQueries,
-      hero_image: heroImage, // BAGO
-      gallery_images: galleryImages, // BAGO
+      hero_image: heroImage,
+      gallery_images: galleryImages,
     })
     .select()
     .single();

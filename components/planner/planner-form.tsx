@@ -8,6 +8,9 @@ import type { TripInput } from "@/types/trip";
 import { POPULAR_DESTINATIONS } from "@/lib/destinations";
 import { CURRENCIES } from "@/lib/currencies";
 import { useUserCurrency } from "@/hooks/use-user-currency";
+import { ThinkingOrb } from "thinking-orbs";
+import { createClient } from "@/lib/supabase/client";
+import { SendIcon, type SendIconHandle } from "@/components/ui/send-icon";
 
 type Props = {
   onGenerate: (trip: TripInput) => void;
@@ -34,6 +37,7 @@ type PersistedState = {
 const STORAGE_KEY = "atlas_planner_state";
 const DAY_CHIPS = ["3", "5", "7", "10", "14"];
 const GREETING: Message = { id: "q1", role: "ai", content: "Hey! Where do you want to go?" };
+const TYPING_DELAY = 1000;
 
 function loadPersisted(): PersistedState | null {
   if (typeof window === "undefined") return null;
@@ -53,6 +57,7 @@ export default function PlannerForm({ onGenerate }: Props) {
 
   const [messages, setMessages] = useState<Message[]>(() => persisted?.messages ?? [GREETING]);
   const [step, setStep] = useState<Step>(() => persisted?.step ?? "destination");
+  const [isTyping, setIsTyping] = useState(false);
 
   const [origin, setOrigin] = useState(() => persisted?.origin ?? "");
   const [destination, setDestination] = useState(() => persisted?.destination ?? "");
@@ -70,17 +75,17 @@ export default function PlannerForm({ onGenerate }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
   const initialized = useRef(false);
+  const sendIconRef = useRef<SendIconHandle>(null); // BAGO
 
   useEffect(() => {
     setBudgetCurrency(preferredCurrency);
   }, [preferredCurrency]);
 
-  // Prefill destination from ?destination= query param, skip straight past it
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
 
-    if (persisted) return; // may existing conversation na, huwag i-override
+    if (persisted) return;
 
     const destParam = searchParams.get("destination");
     if (destParam) {
@@ -90,11 +95,34 @@ export default function PlannerForm({ onGenerate }: Props) {
         { id: "a1", role: "user", content: destParam },
       ]);
       setStep("origin");
-      addMessage("ai", "Nice pick. Where are you flying from? You can skip this.");
+      addMessageWithTyping("ai", "Nice pick. Where are you flying from? You can skip this.");
     }
   }, [searchParams]);
 
-  // I-save ang state tuwing may pagbabago
+  // BAGO — i-prefill ang origin mula sa naka-save na default_origin ng user
+  useEffect(() => {
+    if (persisted) return; // may existing conversation na, huwag i-override
+    if (origin) return; // may laman na, huwag i-override
+
+    async function loadDefaultOrigin() {
+      const supabase = createClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("default_origin")
+        .eq("id", userData.user.id)
+        .single();
+
+      if (profile?.default_origin) {
+        setOrigin(profile.default_origin);
+      }
+    }
+
+    loadDefaultOrigin();
+  }, []);
+
   useEffect(() => {
     const toSave: PersistedState = {
       messages,
@@ -110,11 +138,11 @@ export default function PlannerForm({ onGenerate }: Props) {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isTyping]);
 
   useEffect(() => {
-    textInputRef.current?.focus();
-  }, [step]);
+    if (!isTyping) textInputRef.current?.focus();
+  }, [step, isTyping]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -133,38 +161,49 @@ export default function PlannerForm({ onGenerate }: Props) {
     setMessages((prev) => [...prev, { id: `${role}-${Date.now()}`, role, content }]);
   };
 
+  const addMessageWithTyping = (role: Message["role"], content: string) => {
+    if (role !== "ai") {
+      addMessage(role, content);
+      return;
+    }
+    setIsTyping(true);
+    setTimeout(() => {
+      setIsTyping(false);
+      addMessage("ai", content);
+    }, TYPING_DELAY);
+  };
+
   const suggestions =
     inputValue.trim().length > 0 && (step === "destination" || step === "origin")
       ? POPULAR_DESTINATIONS.filter((d) =>
-          d.toLowerCase().includes(inputValue.toLowerCase())
-        ).slice(0, 6)
+        d.toLowerCase().includes(inputValue.toLowerCase())
+      ).slice(0, 6)
       : [];
 
   const askOriginQuestion = () => {
     setStep("origin");
     setInputValue("");
-    addMessage("ai", "Nice pick. Where are you flying from? You can skip this.");
+    addMessageWithTyping("ai", "Nice pick. Where are you flying from? You can skip this.");
   };
 
   const askBudgetQuestion = () => {
     setStep("budget");
     setInputValue("");
-    addMessage("ai", "Got it. What's your budget for the trip?");
+    addMessageWithTyping("ai", "Got it. What's your budget for the trip?");
   };
 
   const askDaysQuestion = () => {
     setStep("days");
     setInputValue("");
-    addMessage("ai", "And how many days are you planning for?");
+    addMessageWithTyping("ai", "And how many days are you planning for?");
   };
 
   const askConfirm = (finalDays: string) => {
     setStep("confirm");
     const currency = CURRENCIES.find((c) => c.code === budgetCurrency);
-    addMessage(
+    addMessageWithTyping(
       "ai",
-      `Perfect — ${finalDays} days in ${destination}${
-        origin ? ` from ${origin}` : ""
+      `Perfect — ${finalDays} days in ${destination}${origin ? ` from ${origin}` : ""
       }, budget ${currency?.symbol ?? ""}${budgetAmount} ${budgetCurrency}. Ready when you are.`
     );
   };
@@ -243,6 +282,7 @@ export default function PlannerForm({ onGenerate }: Props) {
     setDays("");
     setInputValue("");
     setError("");
+    setIsTyping(false);
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -264,12 +304,14 @@ export default function PlannerForm({ onGenerate }: Props) {
     step === "destination"
       ? "Tokyo, Japan"
       : step === "origin"
-      ? "Manila, Philippines"
-      : step === "budget"
-      ? "1500"
-      : step === "days"
-      ? "7"
-      : "";
+        ? "Manila, Philippines"
+        : step === "budget"
+          ? "1500"
+          : step === "days"
+            ? "7"
+            : "";
+
+  const hasInput = inputValue.trim().length > 0;
 
   return (
     <div className="flex flex-col rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl">
@@ -303,18 +345,29 @@ export default function PlannerForm({ onGenerate }: Props) {
               </div>
             )}
             <div
-              className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${
-                m.role === "user"
+              className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-sm ${m.role === "user"
                   ? "rounded-tr-sm bg-cyan-500 text-white"
                   : "rounded-tl-sm border border-white/10 bg-white/5 text-slate-200"
-              }`}
+                }`}
             >
               {m.content}
             </div>
           </div>
         ))}
 
-        {step === "days" && (
+        {/* Typing indicator — thinking orb */}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-xs text-cyan-300">
+              AI
+            </div>
+            <div className="flex items-center rounded-2xl rounded-tl-sm border border-white/10 bg-white/5 px-3 py-2">
+              <ThinkingOrb state="listening" size={20} theme="dark" />
+            </div>
+          </div>
+        )}
+
+        {!isTyping && step === "days" && (
           <div className="ml-9 flex flex-wrap gap-2">
             {DAY_CHIPS.map((d) => (
               <button
@@ -329,7 +382,7 @@ export default function PlannerForm({ onGenerate }: Props) {
           </div>
         )}
 
-        {step === "origin" && (
+        {!isTyping && step === "origin" && (
           <div className="ml-9">
             <button
               type="button"
@@ -341,7 +394,7 @@ export default function PlannerForm({ onGenerate }: Props) {
           </div>
         )}
 
-        {step === "confirm" && (
+        {!isTyping && step === "confirm" && (
           <div className="ml-9">
             <Button onClick={handleSubmit}>Generate trip</Button>
           </div>
@@ -359,7 +412,8 @@ export default function PlannerForm({ onGenerate }: Props) {
                 <button
                   type="button"
                   onClick={() => setCurrencyDropdownOpen((prev) => !prev)}
-                  className="flex h-full items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-xs text-white transition-colors hover:border-cyan-500/30"
+                  disabled={isTyping}
+                  className="flex h-full items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-xs text-white transition-colors hover:border-cyan-500/30 disabled:opacity-50"
                 >
                   {selectedCurrency?.symbol} {budgetCurrency}
                   <ChevronDown size={12} />
@@ -375,9 +429,8 @@ export default function PlannerForm({ onGenerate }: Props) {
                           setBudgetCurrency(c.code);
                           setCurrencyDropdownOpen(false);
                         }}
-                        className={`block w-full px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-cyan-500/10 hover:text-cyan-300 ${
-                          c.code === budgetCurrency ? "text-cyan-300" : "text-slate-300"
-                        }`}
+                        className={`block w-full px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-cyan-500/10 hover:text-cyan-300 ${c.code === budgetCurrency ? "text-cyan-300" : "text-slate-300"
+                          }`}
                       >
                         {c.symbol} {c.code}
                       </button>
@@ -391,6 +444,7 @@ export default function PlannerForm({ onGenerate }: Props) {
               <input
                 ref={textInputRef}
                 value={inputValue}
+                disabled={isTyping}
                 inputMode={step === "budget" || step === "days" ? "numeric" : "text"}
                 onChange={(e) => {
                   const val =
@@ -405,10 +459,10 @@ export default function PlannerForm({ onGenerate }: Props) {
                 onKeyDown={handleInputKeyDown}
                 placeholder={placeholder}
                 autoComplete="off"
-                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-cyan-400"
+                className="w-full rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none focus:border-cyan-400 disabled:opacity-50"
               />
 
-              {showSuggestions && suggestions.length > 0 && (
+              {showSuggestions && !isTyping && suggestions.length > 0 && (
                 <div className="custom-scrollbar absolute bottom-full z-10 mb-1 max-h-48 w-full overflow-y-auto rounded-lg border border-white/10 bg-slate-900/95 backdrop-blur-xl shadow-xl">
                   {suggestions.map((place) => (
                     <button
@@ -424,20 +478,31 @@ export default function PlannerForm({ onGenerate }: Props) {
               )}
             </div>
 
-            <Button
-              className="shrink-0"
+            {/* BAGO — animated send icon */}
+            <button
+              type="button"
+              disabled={isTyping}
               onClick={() => {
+                sendIconRef.current?.startAnimation();
+                setTimeout(() => sendIconRef.current?.stopAnimation(), 500);
+
                 if (step === "destination") handleDestinationSubmit(inputValue);
                 if (step === "origin") handleOriginSubmit(inputValue);
                 if (step === "budget") handleBudgetSubmit(inputValue);
                 if (step === "days") handleDaysSubmit(inputValue);
               }}
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200 ${hasInput
+                  ? "bg-cyan-500 text-black shadow-lg shadow-cyan-500/30 hover:bg-cyan-400 hover:shadow-cyan-500/50"
+                  : "bg-white/10 text-slate-500"
+                } disabled:opacity-50 disabled:shadow-none`}
             >
-              →
-            </Button>
+              <SendIcon ref={sendIconRef} size={16} />
+            </button>
           </div>
         </div>
       )}
     </div>
   );
 }
+
+

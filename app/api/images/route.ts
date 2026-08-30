@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { checkNamedRateLimit } from "@/lib/rate-limit";
 
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 
@@ -20,6 +21,21 @@ async function searchUnsplash(query: string, perPage: number) {
 }
 
 export async function GET(req: NextRequest) {
+  // BAGO — rate limit check, IP-based
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+
+  const { allowed } = checkNamedRateLimit("images", ip, {
+    windowMs: 60 * 1000, // 1 minute
+    max: 40, // mataas dahil maraming calls kada trip generation (hero + gallery)
+  });
+
+  if (!allowed) {
+    return Response.json({ images: [] }, { status: 429 });
+  }
+
   const { searchParams } = new URL(req.url);
   const query = searchParams.get("query");
   const fallbackQuery = searchParams.get("fallback");
@@ -43,13 +59,13 @@ export async function GET(req: NextRequest) {
     }
 
     const images = results.map((photo: any) => ({
-      id: photo.id, // BAGO
+      id: photo.id,
       url: photo.urls.regular,
       thumbUrl: photo.urls.small,
       alt: photo.alt_description || query,
       credit: photo.user?.name || "Unsplash",
       creditLink: photo.user?.links?.html || "https://unsplash.com",
-      downloadLocation: photo.links?.download_location || null, // BAGO
+      downloadLocation: photo.links?.download_location || null,
     }));
 
     return Response.json({ images });

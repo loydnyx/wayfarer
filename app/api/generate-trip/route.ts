@@ -1,6 +1,8 @@
 import OpenAI from "openai";
-import { NextRequest } from "next/server";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { checkNamedRateLimit } from "@/lib/rate-limit";
+import { createClient } from "@/lib/supabase/server";
 
 type TripInput = {
   destination: string;
@@ -11,6 +13,8 @@ type TripInput = {
 
 const USE_MOCK =
   process.env.USE_MOCK_AI === "true" || !process.env.GEMINI_API_KEY;
+
+const ANON_COOKIE = "wayfarer_anon_generated";
 
 function generateMockTrip(input: TripInput) {
   const dayCount = parseInt(input.days) || 3;
@@ -50,16 +54,16 @@ function generateMockTrip(input: TripInput) {
     ],
 
     itinerary: Array.from({ length: dayCount }, (_, i) => ({
-      day: `Day ${i + 1}: Visit a local landmark (entrance ~₱200), enjoy lunch at a nearby eatery (~₱250), and explore a market or nearby attraction in the afternoon (~₱150).`,
-      userCost: "₱600",
-      localCost: "₱600",
+      day: `Day ${i + 1}: Explore ${input.destination} with curated experiences, local food, hidden gems and attractions.`,
+      userCost: "N/A",
+      localCost: "N/A",
     })),
 
     tips: [
-      "Travel early to avoid crowds, especially at popular landmarks.",
-      "Bring enough cash for local markets, as many small vendors don't accept cards.",
-      "Use public transportation whenever possible to save on costs.",
-      "Always stay hydrated, especially if walking between attractions.",
+      "Travel early to avoid crowds.",
+      "Bring enough cash for local markets.",
+      "Use public transportation whenever possible.",
+      "Always stay hydrated.",
     ],
   };
 }
@@ -102,25 +106,86 @@ export async function POST(req: NextRequest) {
     req.headers.get("x-real-ip") ||
     "unknown";
 
-  const { allowed, remaining, resetAt } = checkRateLimit(ip);
+  // BAGO — check kung naka-login
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!allowed) {
-    const seconds = Math.ceil((resetAt - Date.now()) / 1000);
-    return Response.json(
-      { error: `Too many requests. Please wait ${Math.ceil(seconds / 60)} minute(s).` },
-      { status: 429 }
+  let willSetAnonCookie = false;
+
+  if (user) {
+    // BAGO — naka-login: 5 generations per hour per user
+    const { allowed, remaining, resetAt } = checkNamedRateLimit(
+      "generate-trip-user",
+      user.id,
+      { windowMs: 60 * 60 * 1000, max: 5 }
     );
+
+    if (!allowed) {
+      const minutes = Math.ceil((resetAt - Date.now()) / 60000);
+      return NextResponse.json(
+        {
+          error: `You've reached your generation limit. Please wait ${minutes} minute(s) and try again.`,
+        },
+        { status: 429 }
+      );
+    }
+  } else {
+    // BAGO — hindi naka-login: isang beses lang, gamit ang cookie
+    const cookieStore = await cookies();
+    const hasGenerated = cookieStore.get(ANON_COOKIE)?.value === "true";
+
+    if (hasGenerated) {
+      return NextResponse.json(
+        {
+          error: "SIGN_IN_REQUIRED",
+          message: "You've already used your free trip generation. Sign in to keep planning.",
+        },
+        { status: 401 }
+      );
+    }
+
+    // Safety net kung sakaling ma-clear ang cookies — max 3 per IP per day
+    const { allowed } = checkNamedRateLimit("generate-trip-anon-ip", ip, {
+      windowMs: 24 * 60 * 60 * 1000,
+      max: 3,
+    });
+
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: "SIGN_IN_REQUIRED",
+          message: "Please sign in to continue planning trips.",
+        },
+        { status: 401 }
+      );
+    }
+
+    willSetAnonCookie = true;
   }
 
   const input: TripInput = await req.json();
 
+  const attachAnonCookie = (response: NextResponse) => {
+    if (willSetAnonCookie) {
+      response.cookies.set(ANON_COOKIE, "true", {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        sameSite: "lax",
+        path: "/",
+      });
+    }
+    return response;
+  };
+
   if (USE_MOCK) {
-    return Response.json(generateMockTrip(input), {
+    const response = NextResponse.json(generateMockTrip(input), {
       headers: {
         "X-Mock-Data": "true",
-        "X-RateLimit-Remaining": String(remaining),
       },
     });
+    return attachAnonCookie(response);
   }
 
   const openai = new OpenAI({
@@ -128,7 +193,7 @@ export async function POST(req: NextRequest) {
     baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
   });
 
-  const prompt = `
+const prompt = `
 Return ONLY valid JSON.
 
 No markdown.
@@ -209,19 +274,20 @@ ${input.days}
 
     const parsed = JSON.parse(text);
 
-    return Response.json(parsed, {
+    const response = NextResponse.json(parsed, {
       headers: {
         "X-Mock-Data": "false",
-        "X-RateLimit-Remaining": String(remaining),
       },
     });
+    return attachAnonCookie(response);
   } catch (err) {
     console.error(err);
 
-    return Response.json(generateMockTrip(input), {
+    const response = NextResponse.json(generateMockTrip(input), {
       headers: {
         "X-Mock-Data": "true",
       },
     });
+    return attachAnonCookie(response);
   }
 }

@@ -1,9 +1,25 @@
 import { NextRequest } from "next/server";
+import { checkNamedRateLimit } from "@/lib/rate-limit";
 
 const AERODATABOX_API_KEY = process.env.AERODATABOX_API_KEY;
 const AERODATABOX_HOST = "aerodatabox.p.rapidapi.com";
 
 export async function GET(req: NextRequest) {
+  // BAGO — mas mahigpit ang limit dahil mas mahal ang AeroDataBox quota
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+
+  const { allowed } = checkNamedRateLimit("flights", ip, {
+    windowMs: 60 * 1000,
+    max: 10,
+  });
+
+  if (!allowed) {
+    return Response.json({ hasLiveData: false, flights: [] }, { status: 429 });
+  }
+
   const { searchParams } = new URL(req.url);
   const originCode = searchParams.get("origin");
   const destCode = searchParams.get("destination");
@@ -17,8 +33,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Kumuha ng flights na nagla-land sa destination airport ngayon
-    // (paggamit ng "arrivals" para malaman kung anong flights ang papunta doon)
     const now = new Date();
     const fromTime = now.toISOString().slice(0, 16);
     const toTime = new Date(now.getTime() + 12 * 60 * 60 * 1000)
@@ -32,7 +46,7 @@ export async function GET(req: NextRequest) {
           "X-RapidAPI-Key": AERODATABOX_API_KEY,
           "X-RapidAPI-Host": AERODATABOX_HOST,
         },
-        next: { revalidate: 1800 }, // 30 min cache
+        next: { revalidate: 1800 },
       }
     );
 
@@ -43,7 +57,6 @@ export async function GET(req: NextRequest) {
     const data = await response.json();
     const arrivals = data.arrivals || [];
 
-    // Kung meron tayong origin code, i-filter lang yung mula doon
     const relevantFlights = originCode
       ? arrivals.filter(
           (f: any) => f.departure?.airport?.iata === originCode

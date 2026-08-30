@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ImageIcon, X, ExternalLink } from "lucide-react";
+import { getOrFetchImage } from "@/lib/trips/image-cache";
 
 type UnsplashImage = {
   id?: string;
@@ -22,7 +23,6 @@ type Props = {
   cachedGalleryImages?: (UnsplashImage | null)[];
 };
 
-// BAGO — UTM params required ng Unsplash API guidelines
 function withUtm(url: string) {
   const separator = url.includes("?") ? "&" : "?";
   return `${url}${separator}utm_source=wayfarer&utm_medium=referral`;
@@ -52,10 +52,8 @@ export default function DestinationGallery({
     caption: string;
   } | null>(null);
 
-  // BAGO — guard laban sa duplicate tracking calls
   const trackedIds = useRef<Set<string>>(new Set());
 
-  // BAGO — i-trigger ang Unsplash download event
   function trackDownload(image?: UnsplashImage | null) {
     if (!image?.downloadLocation || !image.id) return;
     if (trackedIds.current.has(image.id)) return;
@@ -73,7 +71,6 @@ export default function DestinationGallery({
       const img = cachedHeroImage ?? null;
       setHeroImage(img);
       setHeroLoading(false);
-      trackDownload(img);
       return;
     }
 
@@ -83,13 +80,13 @@ export default function DestinationGallery({
     }
 
     setHeroLoading(true);
-    const fallback = destination ? `&fallback=${encodeURIComponent(destination)}` : "";
-    fetch(`/api/images?query=${encodeURIComponent(heroImageQuery)}&count=1${fallback}&offset=0`)
-      .then((res) => res.json())
-      .then((data) => {
-        const img = data.images?.[0] ?? null;
+    const fallback = destination || heroImageQuery;
+
+    // BAGO — dumadaan na sa shared cache imbes na direktang tumawag sa /api/images
+    getOrFetchImage(heroImageQuery, fallback, 0)
+      .then((img) => {
         setHeroImage(img);
-        trackDownload(img);
+        trackDownload(img); // panatilihin ang download tracking
       })
       .catch(() => setHeroImage(null))
       .finally(() => setHeroLoading(false));
@@ -100,7 +97,6 @@ export default function DestinationGallery({
       const imgs = cachedGalleryImages ?? safeGalleryQueries.map(() => null);
       setGalleryImages(imgs);
       setGalleryLoading(false);
-      imgs.forEach(trackDownload);
       return;
     }
 
@@ -110,19 +106,15 @@ export default function DestinationGallery({
     }
 
     setGalleryLoading(true);
-    const fallback = destination ? `&fallback=${encodeURIComponent(destination)}` : "";
+    const fallback = destination || "travel";
 
+    // BAGO — bawat gallery query ay dumadaan din sa shared cache
     Promise.all(
-      safeGalleryQueries.map((q, index) =>
-        fetch(`/api/images?query=${encodeURIComponent(q)}&count=1${fallback}&offset=${index + 1}`)
-          .then((res) => res.json())
-          .then((data) => data.images?.[0] ?? null)
-          .catch(() => null)
-      )
+      safeGalleryQueries.map((q, index) => getOrFetchImage(q, fallback, index + 1))
     )
       .then((imgs) => {
         setGalleryImages(imgs);
-        imgs.forEach(trackDownload);
+        imgs.forEach(trackDownload); // panatilihin ang download tracking
       })
       .finally(() => setGalleryLoading(false));
   }, [safeGalleryQueries, destination, cachedGalleryImages]);
@@ -176,8 +168,7 @@ export default function DestinationGallery({
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             <div className="absolute bottom-4 left-6 right-6">
               <h3 className="text-2xl font-bold text-white">{destination}</h3>
-              {/* BAGO — hiwalay na links, may UTM */}
-              <p className="text-xs text-slate-300">
+                <p className="text-xs text-slate-300">
                 Photo by{" "}
                 <a
                   href={withUtm(heroImage.creditLink)}
@@ -259,7 +250,7 @@ export default function DestinationGallery({
         })}
       </div>
 
-{/* Lightbox modal */}
+      {/* Lightbox modal */}
       <AnimatePresence>
         {lightboxImage && (
           <motion.div
